@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>College Image</title>
+</head>
+<body>
+
+    <h2>College Image</h2>
+
+    <img th:src="@{'/image/' + ${imageName}}" alt="College Image" style="max-width: 400px;"/>
+
+</body>
+</html>
