@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/students")
 @CrossOrigin
+@RequestMapping("/api/students")
+
 public class StudentController {
 
     @Autowired

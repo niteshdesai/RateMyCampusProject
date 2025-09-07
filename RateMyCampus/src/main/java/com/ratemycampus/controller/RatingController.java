@@ -17,6 +17,25 @@ import java.util.List;
 //@CrossOrigin("*")
 public class RatingController {
 
+    @GetMapping("/college/{collegeId}")
+    public ResponseEntity<?> getAverageRatingByCollegeId(@PathVariable Long collegeId) {
+        Double avg = ratingService.getAverageRatingByCollegeId(collegeId);
+        if (avg == null) {
+            return ResponseEntity.ok("No ratings found for this college");
+        }
+        return ResponseEntity.ok(avg);
+    }
+
+    @GetMapping("/college/{collegeId}")
+    public ResponseEntity<?> getRatingsByCollegeId(@PathVariable Long collegeId) {
+        try {
+            List<Rating> ratings = ratingService.getRatingsByCollegeId(collegeId);
+            return ResponseEntity.ok(ratings);
+        } catch (Exception ex) {
+            return ResponseEntity.status(404).body(ex.getMessage());
+        }
+    }
+
     @Autowired
     private RatingService ratingService;
 

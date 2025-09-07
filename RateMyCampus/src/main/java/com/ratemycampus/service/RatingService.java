@@ -15,6 +15,20 @@ import java.util.Optional;
 
 @Service
 public class RatingService {
+    public Double getAverageRatingByCollegeId(Long collegeId) {
+        List<Rating> ratings = ratingRepo.findByCollegeCid(collegeId);
+        if (ratings.isEmpty()) {
+            return null;
+        }
+        double sum = 0;
+        for (Rating rating : ratings) {
+            sum += rating.getScore();
+        }
+        return sum / ratings.size();
+    }
+    public List<Rating> getRatingsByCollegeId(Long collegeId) {
+        return ratingRepo.findByCollegeCid(collegeId);
+    }
 
     @Autowired
     private RatingRepository ratingRepo;
