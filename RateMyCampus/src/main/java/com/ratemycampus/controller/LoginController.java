@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/auth")
 public class LoginController {
 
@@ -15,6 +16,7 @@ public class LoginController {
     public String studentLogin(@RequestParam String enrollment,
                               @RequestParam Integer semester,
                               @RequestParam Long collegeId) {
+        System.out.println("student login is called"+enrollment+" "+semester+" "+collegeId );
         String token = loginService.loginStudent(enrollment, collegeId, semester);
         return (token != null) ? token : "INVALID_STUDENT_DETAILS";
     }
