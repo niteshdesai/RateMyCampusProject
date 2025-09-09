@@ -45,7 +45,7 @@ public class TeacherService {
 
         existing.setTname(updated.getTname());
         existing.setTsem(updated.getTsem());
-        existing.setTsection(updated.getTsection());
+    existing.setRole(updated.getRole());
       
         existing.setTimg(updated.getTimg());
         

@@ -45,7 +45,7 @@ public class CollegeService {
     }
 
     public College createCollege(College college) {
-        if (collegeRepository.existsByCname(college.getCname())) {
+    if (collegeRepository.existsByCname(college.getCname())) {
             throw new RuntimeException("College with name already exists");
         }
 
@@ -53,7 +53,7 @@ public class CollegeService {
             throw new RuntimeException("College with email already exists");
         }
 
-        return collegeRepository.save(college);
+    return collegeRepository.save(college);
     }
 
     public College updateCollege(Long id, College updatedCollege) {
@@ -68,12 +68,14 @@ public class CollegeService {
             }
         }
 
-        existing.setCname(updatedCollege.getCname());
-        existing.setCdesc(updatedCollege.getCdesc());
-        existing.setCactivity(updatedCollege.getCactivity());
-        existing.setAddress(updatedCollege.getAddress());
-        existing.setEmail(updatedCollege.getEmail());
-        existing.setCimg(updatedCollege.getCimg());
+    existing.setCname(updatedCollege.getCname());
+    existing.setCdesc(updatedCollege.getCdesc());
+    existing.setCactivity(updatedCollege.getCactivity());
+    existing.setAddress(updatedCollege.getAddress());
+    existing.setEmail(updatedCollege.getEmail());
+    existing.setCimg(updatedCollege.getCimg());
+    existing.setPhone(updatedCollege.getPhone());
+    existing.setWebsite(updatedCollege.getWebsite());
         return collegeRepository.save(existing);
     }
 

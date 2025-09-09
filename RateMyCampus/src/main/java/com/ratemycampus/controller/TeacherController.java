@@ -25,48 +25,47 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/teachers")
-//@CrossOrigin("*")
+
 public class TeacherController {
 
     @Autowired private TeacherService teacherService;
 
-    @PostMapping(consumes = {"multipart/form-data"})
-    public ResponseEntity<?> addTeacher(@Valid @RequestPart Teacher teacher,
-    		BindingResult result,
-    		 @RequestPart(value = "image", required = false) MultipartFile image
-    		) throws IOException {
-    	 try {
-         	
-     		if (result.hasErrors()) {
-     	        HashMap<String, String> errors = new HashMap<>();
-     	        result.getFieldErrors().forEach(error -> {
-     	            errors.put(error.getField(), error.getDefaultMessage());
-     	
-     	        });
-     	
-     	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-     	 }
-     		
-     	   if (image != null && !image.isEmpty()) {
-               if (!isImageFile(image)) {
-                   HashMap<String, String> errors = new HashMap<>();
-                   errors.put("image", "File must be an image (jpg, jpeg, png)");
-                   return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-               }
-               String imagePath = saveImage(image);
-         
-               teacher.setTimg(imagePath);
-           }
-     	
-     		Teacher saved = teacherService.addTeacher(teacher);
-            return new ResponseEntity<>(saved, HttpStatus.CREATED);
-     } catch (EntityNotFoundException e) {
-     	HashMap<String, String> errors = new HashMap<>();
-         errors.put("error", e.getMessage());
-         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-     }
-    }
+	@PostMapping(consumes = {"multipart/form-data"})
+	public ResponseEntity<?> addTeacher(@Valid @RequestPart Teacher teacher,
+										BindingResult result,
+										@RequestPart(value = "image", required = false) MultipartFile image
+	) throws IOException {
+		try {
+			if (result.hasErrors()) {
+				HashMap<String, String> errors = new HashMap<>();
+				result.getFieldErrors().forEach(error -> {
+					errors.put(error.getField(), error.getDefaultMessage());
+				});
+				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+			}
+			if (image != null && !image.isEmpty()) {
+				if (!isImageFile(image)) {
+					HashMap<String, String> errors = new HashMap<>();
+					errors.put("image", "File must be an image (jpg, jpeg, png)");
+					return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+				}
+				String imagePath = saveImage(image);
+				teacher.setTimg(imagePath);
+			} else {
+				HashMap<String, String> errors = new HashMap<>();
+				errors.put("image", "Image Is Required");
+				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+			}
+			Teacher saved = teacherService.addTeacher(teacher);
+			return new ResponseEntity<>(saved, HttpStatus.CREATED);
+		} catch (EntityNotFoundException e) {
+			HashMap<String, String> errors = new HashMap<>();
+			errors.put("error", e.getMessage());
+			return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+		}
+	}
 
     @GetMapping
     public ResponseEntity<List<Teacher>> getAllTeachers() {
@@ -112,9 +111,9 @@ public class TeacherController {
     	
     	
     }
-    @PutMapping(value = "/updateTeacherImage/{Id}", consumes = { "multipart/form-data" })
+	@PutMapping(value = "/updateTeacherImage/{Id}", consumes = { "multipart/form-data" })
 	public ResponseEntity<?> updateTeacherImage(@PathVariable Integer Id,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+											   @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 		Teacher teacher = teacherService.getTeacherById(Id);
 		String prevImage = teacher.getTimg();
 		try {
@@ -124,24 +123,23 @@ public class TeacherController {
 					errors.put("image", "File must be an image (jpg, jpeg, png)");
 					return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 				}
-				String uploadDir = new ClassPathResource("static/image").getFile().getAbsolutePath();
-				Path uploadPath = Paths.get(uploadDir).resolve(prevImage);
-				File imageFiles = uploadPath.toFile();
-				
-				if(imageFiles.exists())
-				{
-					imageFiles.delete();
+				// Delete old image if exists
+				if (prevImage != null && !prevImage.isEmpty()) {
+					File oldFile = new File("uploads/teacher-images/" + prevImage);
+					if (oldFile.exists()) {
+						oldFile.delete();
+					}
 				}
-				
 				String imagePath = saveImage(image);
 				teacher.setTimg(imagePath);
 			}
+			Teacher updated = teacherService.updateTeacher(Id, teacher);
+			return ResponseEntity.ok(updated);
 		} catch (Exception e) {
-			// TODO: handle exception
+			HashMap<String, String> errors = new HashMap<>();
+			errors.put("error", "Failed to Update Teacher Image: " + e.getMessage());
+			return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 		}
-
-		Teacher updated = teacherService.updateTeacher(Id, teacher);
-		return ResponseEntity.ok(updated);
 	}
 
     // New endpoints for managing teacher courses via TeacherCourse join table could be added
@@ -162,26 +160,17 @@ public class TeacherController {
         );
     }
 
-    private String saveImage(MultipartFile image) throws IOException {
-    	Path filePath=null;
-    	String fileName="";
-    	try {
-    	String uploadDir =new ClassPathResource("static/image").getFile().getAbsolutePath();
-        Path uploadPath = Paths.get(uploadDir);
-      
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        fileName = image.getOriginalFilename();
-    
-        filePath = uploadPath.resolve(fileName);
-     
-        Files.copy(image.getInputStream(), filePath);
-       
-    	} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.getMessage());
+	private String saveImage(MultipartFile image) throws IOException {
+		String uploadDir = "uploads/teacher-images/";
+		File dir = new File(uploadDir);
+		if (!dir.exists()) {
+			dir.mkdirs();
 		}
-        return fileName;
-    }
+		String originalFilename = image.getOriginalFilename();
+		String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+		String uniqueFileName = java.util.UUID.randomUUID().toString() + fileExtension;
+		Path filePath = Paths.get(uploadDir, uniqueFileName);
+		Files.copy(image.getInputStream(), filePath);
+		return uniqueFileName;
+	}
 }

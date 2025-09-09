@@ -1,6 +1,8 @@
 package com.ratemycampus.dto;
 
 public class CollegeDTO {
+	public String phone;
+	public String website;
 	public Long cid;
 	public String cname;
 	public String cdesc;

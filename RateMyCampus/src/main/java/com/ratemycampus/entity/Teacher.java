@@ -18,9 +18,8 @@ public class Teacher {
     @NotNull(message = "Semester is required")
     private Integer tsem;
 
-    @NotBlank(message = "Section is required")
-    @Pattern(regexp = "^[A-Z]$", message = "Section must be a single capital letter")
-    private String tsection;
+    @NotBlank(message = "Role is required")
+    private String role;
 
     private String timg;
 
@@ -43,14 +42,14 @@ public class Teacher {
     public Teacher(
             @NotBlank(message = "Teacher name is required") @Pattern(regexp = "^[A-Za-z ]+$", message = "Teacher name must contain only letters and spaces") String tname,
             @NotNull(message = "Semester is required") Integer tsem,
-            @NotBlank(message = "Section is required") @Pattern(regexp = "^[A-Z]$", message = "Section must be a single capital letter") String tsection,
+            @NotBlank(message = "Role is required") String role,
             @NotBlank(message = "Subject is required") @Size(max = 45) String tsubject,
             String timg,
             College college,
             Department department) {
         this.tname = tname;
         this.tsem = tsem;
-        this.tsection = tsection;
+        this.role = role;
         this.timg = timg;
         this.college = college;
         this.department = department;
@@ -81,12 +80,12 @@ public class Teacher {
         this.tsem = tsem;
     }
 
-    public String getTsection() {
-        return tsection;
+    public String getRole() {
+        return role;
     }
 
-    public void setTsection(String tsection) {
-        this.tsection = tsection;
+    public void setRole(String role) {
+        this.role = role;
     }
 
 

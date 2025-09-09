@@ -13,10 +13,19 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/ratings")
-//@CrossOrigin("*")
 public class RatingController {
 
+ 
+    @Autowired
+    private RatingService ratingService;
+
+   @GetMapping("/college/{collegeId}/student-count")
+    public ResponseEntity<?> getDistinctStudentCountByCollegeId(@PathVariable Long collegeId) {
+        long count = ratingService.getDistinctStudentCountByCollegeId(collegeId);
+        return ResponseEntity.ok(count);
+    }
     @GetMapping("/college/{collegeId}")
     public ResponseEntity<?> getAverageRatingByCollegeId(@PathVariable Long collegeId) {
         Double avg = ratingService.getAverageRatingByCollegeId(collegeId);
@@ -25,19 +34,6 @@ public class RatingController {
         }
         return ResponseEntity.ok(avg);
     }
-
-    @GetMapping("/college/{collegeId}")
-    public ResponseEntity<?> getRatingsByCollegeId(@PathVariable Long collegeId) {
-        try {
-            List<Rating> ratings = ratingService.getRatingsByCollegeId(collegeId);
-            return ResponseEntity.ok(ratings);
-        } catch (Exception ex) {
-            return ResponseEntity.status(404).body(ex.getMessage());
-        }
-    }
-
-    @Autowired
-    private RatingService ratingService;
 
     @PostMapping
     public ResponseEntity<?> addRating(@Valid @RequestBody Rating rating,BindingResult result) {

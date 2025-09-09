@@ -89,7 +89,7 @@ public class CollegeController {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateCollege(@Valid @RequestBody College college,BindingResult result, @PathVariable Long id
-                                           ) {
+										   ) {
 		try {
 			if (result.hasErrors()) {
 				Map<String, String> errors = new HashMap<>();
@@ -158,22 +158,19 @@ public class CollegeController {
 					errors.put("image", "File must be an image (jpg, jpeg, png)");
 					return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 				}
-				String uploadDir = new ClassPathResource("static/image").getFile().getAbsolutePath();
-				Path uploadPath = Paths.get(uploadDir).resolve(prevImage);
-				File imageFiles = uploadPath.toFile();
-				
-				if(imageFiles.exists())
-				{
-					imageFiles.delete();
+				// Delete previous image if exists
+				if (prevImage != null && !prevImage.isEmpty()) {
+					File oldFile = new File(prevImage);
+					if (oldFile.exists()) {
+						oldFile.delete();
+					}
 				}
-				
-				String imagePath = saveImage(image);
+				String imagePath = saveImage(image); // This will save in uploads/college-images/
 				college.setCimg(imagePath);
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-
 		College updated = collegeService.updateCollege(Id, college);
 		return ResponseEntity.ok(updated);
 	}
@@ -185,26 +182,21 @@ public class CollegeController {
 	}
 
 	private String saveImage(MultipartFile image) throws IOException {
-		Path filePath = null;
-		String fileName = "";
-		try {
-			String uploadDir = new ClassPathResource("static/image").getFile().getAbsolutePath();
-			Path uploadPath = Paths.get(uploadDir);
-
-			if (!Files.exists(uploadPath)) {
-				Files.createDirectories(uploadPath);
-			}
-			fileName = image.getOriginalFilename();
-
-			filePath = uploadPath.resolve(fileName);
-
-			Files.copy(image.getInputStream(), filePath);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.getMessage());
+		String uploadDir = "uploads/college-images/";
+		Path uploadPath = Paths.get(uploadDir);
+		if (!Files.exists(uploadPath)) {
+			Files.createDirectories(uploadPath);
 		}
-		return fileName;
+		String originalFileName = image.getOriginalFilename();
+		String fileExtension = "";
+		if (originalFileName != null && originalFileName.contains(".")) {
+			fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+		}
+		String fileName = java.util.UUID.randomUUID() + fileExtension;
+		Path filePath = uploadPath.resolve(fileName);
+		Files.copy(image.getInputStream(), filePath);
+		// Return relative path for storage in DB
+		return uploadDir + fileName;
 	}
 
 }

@@ -62,7 +62,7 @@ public final class DtoMapper {
         t.setTid(dto.tid);
         t.setTname(dto.tname);
         t.setTsem(dto.tsem);
-        t.setTsection(dto.tsection);
+    t.setRole(dto.role);
         t.setTimg(dto.timg);
         if (dto.collegeId != null) {
             College c = new College();
@@ -83,7 +83,7 @@ public final class DtoMapper {
         dto.tid = t.getTid();
         dto.tname = t.getTname();
         dto.tsem = t.getTsem();
-        dto.tsection = t.getTsection();
+    dto.role = t.getRole();
         dto.timg = t.getTimg();
         dto.collegeId = t.getCollege() != null ? t.getCollege().getCid() : null;
         dto.departmentId = t.getDepartment() != null ? t.getDepartment().getDeptId() : null;

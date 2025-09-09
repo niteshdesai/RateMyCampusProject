@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 
 @Entity
 public class College {
+    
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +32,14 @@ public class College {
 
     @Email(message = "Invalid email format")
     private String email;
+
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number")
+    private String phone;
+
+    @NotBlank(message = "Website is required")
+    @Size(max = 255)
+    private String website;
 
 	// Getters and setters
     public Long getCid() {
@@ -89,10 +98,26 @@ public class College {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
 
     @Override
     public String toString() {
-        return "College [cid=" + cid + ", cname=" + cname + ", cdesc=" + cdesc + ", cactivity=" + cactivity
-                + ", address=" + address + ", cimg=" + cimg + ", email=" + email + "]";
+    return "College [cid=" + cid + ", cname=" + cname + ", cdesc=" + cdesc + ", cactivity=" + cactivity
+        + ", address=" + address + ", cimg=" + cimg + ", email=" + email + ", phone=" + phone + ", website=" + website + "]";
     }
 }
