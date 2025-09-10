@@ -35,7 +35,6 @@ import com.ratemycampus.service.CollegeService;
 import jakarta.validation.Valid;
 
 @RestController
-
 @RequestMapping("/api/colleges")
 @CrossOrigin
 public class CollegeController {

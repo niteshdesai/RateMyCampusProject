@@ -16,13 +16,19 @@ public class JwtUtil {
     private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
 
     public String generateToken(String username, String role) {
-        return Jwts.builder()
+        return generateToken(username, role, null);
+    }
+
+    public String generateToken(String username, String role, Long collegeId) {
+        var builder = Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SECRET_KEY)
-                .compact();
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+        if (collegeId != null) {
+            builder.claim("collegeId", collegeId);
+        }
+        return builder.signWith(SECRET_KEY).compact();
     }
 
     public String extractUsername(String token) {
@@ -31,6 +37,15 @@ public class JwtUtil {
 
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    public Long extractCollegeId(String token) {
+        Object val = extractAllClaims(token).get("collegeId");
+        if (val == null) return null;
+        if (val instanceof Integer) return ((Integer) val).longValue();
+        if (val instanceof Long) return (Long) val;
+        if (val instanceof String) return Long.parseLong((String) val);
+        return null;
     }
 
     public boolean validateToken(String token) {

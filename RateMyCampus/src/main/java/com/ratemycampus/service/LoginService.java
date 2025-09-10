@@ -31,8 +31,9 @@ public class LoginService {
 
     public String loginStudent(String enrollment, Long collegeId, Integer semester) {
         Student student = studentRepo.findByEnrollmentAndCollegeCidAndSsem(enrollment, collegeId, semester);
+        
         if (student != null) {
-            return jwtUtil.generateToken(student.getEnrollment(), "STUDENT");
+            return jwtUtil.generateToken(student.getEnrollment(), "STUDENT", student.getCollege() != null ? student.getCollege().getCid() : 1);
         }
         return null;
     }
