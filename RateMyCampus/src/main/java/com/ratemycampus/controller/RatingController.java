@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/api/ratings")
+@CrossOrigin
 public class RatingController {
 
  

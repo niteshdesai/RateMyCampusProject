@@ -14,8 +14,8 @@ public class LoginController {
 
     @PostMapping("/student")
     public String studentLogin(@RequestParam String enrollment,
-                              @RequestParam Integer semester,
-                              @RequestParam Long collegeId) {
+                               @RequestParam Integer semester,
+                               @RequestParam Long collegeId) {
 
         String token = loginService.loginStudent(enrollment, collegeId, semester);
         return (token != null) ? token : "INVALID_STUDENT_DETAILS";
@@ -23,21 +23,21 @@ public class LoginController {
 
     @PostMapping("/hod")
     public String hodLogin(@RequestParam String email,
-                          @RequestParam String password) {
+                           @RequestParam String password) {
         String token = loginService.loginHod(email, password);
         return (token != null) ? token : "INVALID_HOD_CREDENTIALS";
     }
 
     @PostMapping("/college-admin")
     public String collegeAdminLogin(@RequestParam String email,
-                                   @RequestParam String password) {
+                                    @RequestParam String password) {
         String token = loginService.loginCollegeAdmin(email, password);
         return (token != null) ? token : "INVALID_COLLEGE_ADMIN_CREDENTIALS";
     }
 
     @PostMapping("/admin")
     public String adminLogin(@RequestParam String email,
-                            @RequestParam String password) {
+                             @RequestParam String password) {
         String token = loginService.loginAdmin(email, password);
         return (token != null) ? token : "INVALID_ADMIN_CREDENTIALS";
     }
