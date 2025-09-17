@@ -79,4 +79,34 @@ public class DepartmentController {
 
         departmentService.deleteDepartment(id);
     }
+    
+    @GetMapping("/{id}/students/count")
+    public ResponseEntity<Long> countStudentsByDepartment(@PathVariable Long id) {
+        try {
+            long count = departmentService.countStudentsByDepartmentId(id);
+            return ResponseEntity.ok(count);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @GetMapping("/{id}/teachers/count")
+    public ResponseEntity<Long> countTeachersByDepartment(@PathVariable Long id) {
+        try {
+            long count = departmentService.countTeachersByDepartmentId(id);
+            return ResponseEntity.ok(count);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @GetMapping("/{id}/courses/count")
+    public ResponseEntity<Long> countCoursesByDepartment(@PathVariable Long id) {
+        try {
+            long count = departmentService.countCoursesByDepartmentId(id);
+            return ResponseEntity.ok(count);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
