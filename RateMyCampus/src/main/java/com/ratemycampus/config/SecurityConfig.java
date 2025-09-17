@@ -81,7 +81,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/departments").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/departments/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/departments/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("ROLE_STUDENT")
+                        .requestMatchers("/api/ratings/addCollegeRating").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.PUT, "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/rating-teachers").hasAuthority("ROLE_STUDENT")

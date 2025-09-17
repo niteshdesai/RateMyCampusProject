@@ -17,15 +17,15 @@ import java.util.List;
 @CrossOrigin
 public class RatingController {
 
- 
     @Autowired
     private RatingService ratingService;
 
-   @GetMapping("/college/{collegeId}/student-count")
+    @GetMapping("/college/{collegeId}/student-count")
     public ResponseEntity<?> getDistinctStudentCountByCollegeId(@PathVariable Long collegeId) {
         long count = ratingService.getDistinctStudentCountByCollegeId(collegeId);
         return ResponseEntity.ok(count);
     }
+
     @GetMapping("/college/{collegeId}")
     public ResponseEntity<?> getAverageRatingByCollegeId(@PathVariable Long collegeId) {
         Double avg = ratingService.getAverageRatingByCollegeId(collegeId);
@@ -35,27 +35,35 @@ public class RatingController {
         return ResponseEntity.ok(avg);
     }
 
-    @PostMapping
-    public ResponseEntity<?> addRating(@Valid @RequestBody Rating rating,BindingResult result) {
-    	 try {
-         	
-     		if (result.hasErrors()) {
-     	        HashMap<String, String> errors = new HashMap<>();
-     	        result.getFieldErrors().forEach(error -> {
-     	            errors.put(error.getField(), error.getDefaultMessage());
-     	
-     	        });
-     	
-     	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-     	 }
-     	
-         Rating saved = ratingService.addRating(rating);
-         return new ResponseEntity<>(saved, HttpStatus.CREATED);
-     } catch (RuntimeException e) {
-     	HashMap<String, String> errors = new HashMap<>();
-         errors.put("error", e.getMessage());
-         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-     }
+    @RequestMapping(value = "/addCollegeRating", method = RequestMethod.OPTIONS)
+    public ResponseEntity<Void> handleAddRatingPreflight() {
+        System.out.println("it is execute1");
+        return ResponseEntity.ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "POST, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+                .header("Access-Control-Max-Age", "3600")
+                .build();
+    }
+
+    @PostMapping("/addCollegeRating")
+    public ResponseEntity<?> addRating(@Valid @RequestBody Rating rating, BindingResult result) {
+        try {
+            System.out.println("it is execute2");
+            if (result.hasErrors()) {
+                HashMap<String, String> errors = new HashMap<>();
+                result.getFieldErrors().forEach(error -> {
+                    errors.put(error.getField(), error.getDefaultMessage());
+                });
+                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            }
+            Rating saved = ratingService.addRating(rating);
+            return new ResponseEntity<>(saved, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping
