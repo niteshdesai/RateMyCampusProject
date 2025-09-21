@@ -90,7 +90,7 @@ public class DepartmentController {
         }
     }
     
-    @GetMapping("/{id}/teachers/count")
+        @GetMapping("/{id}/teachers/count")
     public ResponseEntity<Long> countTeachersByDepartment(@PathVariable Long id) {
         try {
             long count = departmentService.countTeachersByDepartmentId(id);

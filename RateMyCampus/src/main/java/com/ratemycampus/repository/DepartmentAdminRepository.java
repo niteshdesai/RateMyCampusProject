@@ -13,4 +13,6 @@ public interface DepartmentAdminRepository extends JpaRepository<DepartmentAdmin
 	Optional<DepartmentAdmin> findByHodId(Integer id);
 	Optional<DepartmentAdmin> findByEmail(String email);
 	DepartmentAdmin findByEmailAndPassword(String email, String password);
+	Optional<DepartmentAdmin> findByDepartmentDeptId(Long departmentId);
+
 }

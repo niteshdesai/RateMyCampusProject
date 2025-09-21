@@ -93,4 +93,10 @@ public class CourseController {
             return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/department/{departmentId}")
+    public ResponseEntity<?> getCoursesByDepartmentId(@PathVariable Long departmentId) {
+        List<Course> courses = courseService.getCoursesByDepartmentId(departmentId);
+        return ResponseEntity.ok(courses);
+    }
 }

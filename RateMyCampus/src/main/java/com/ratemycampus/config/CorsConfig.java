@@ -13,10 +13,10 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")                      // every REST endpoint
-                        .allowedOrigins("http://127.0.0.1:5501")    // your front-end port
+                        .allowedOrigins("*")    // allow all origins
                         .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
-                        .allowedHeaders("Authorization","Content-Type")
-                        .allowCredentials(true);
+                        .allowedHeaders("*")
+                        .allowCredentials(false);
             }
         };
     }

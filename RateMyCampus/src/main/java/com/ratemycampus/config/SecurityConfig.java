@@ -64,7 +64,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/departments/college/{collegeId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teachers/department/{departmentId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/students/department/{departmentId}").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/departments/*/students/count").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/departments/*/teachers/count").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/departments/*/courses/count").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/courses/department/*").permitAll()
                         // Protected endpoints
                         .requestMatchers(HttpMethod.POST, "/api/courses").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/courses/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
@@ -72,11 +75,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/colleges/addcollege").hasAuthority("ROLE_ADMIN")
 
                         .requestMatchers(HttpMethod.PUT, "/api/colleges/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/colleges/updateCollegeImage/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/colleges/updateCollegeImage/{id}")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/hod/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/hod").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/hod/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/hod/updateDeptAdminImage/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/hod/updateDeptAdminImage/{id}")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/hod/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/departments").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/departments/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
@@ -89,24 +94,25 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/rating-teachers/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/students").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/students/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/students/updateStudentImage/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/students/updateStudentImage/{id}")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
 
-
-
-                        .requestMatchers(HttpMethod.GET, "/api/students/course/{courseId}").hasAuthority("ROLE_COLLEGE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/students/course/{courseId}")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/students/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/teachers").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/teachers/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/teachers/updateTeacherImage/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/teachers/updateTeacherImage/{id}")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
 
                         .requestMatchers(HttpMethod.DELETE, "/api/teachers{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
 
+                        .requestMatchers(HttpMethod.POST, "/api/teachers/{teacherId}/courses")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/teachers/{teacherId}/courses")
+                        .hasAuthority("ROLE_COLLEGE_ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/api/teachers/{teacherId}/courses").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/teachers/{teacherId}/courses").hasAuthority("ROLE_COLLEGE_ADMIN")
-
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

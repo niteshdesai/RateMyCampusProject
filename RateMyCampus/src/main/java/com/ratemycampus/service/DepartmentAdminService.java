@@ -71,10 +71,13 @@ import com.ratemycampus.repository.DepartmentAdminRepository;
 
             return repository.findAll();
 	    }
+	    public DepartmentAdmin getHodByDepartmentId(Long departmentId) {
+	        return repository.findByDepartmentDeptId(departmentId).orElse(null);
+	    }
 
 		
 
 
 	}
 
-	
+

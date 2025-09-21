@@ -87,8 +87,11 @@ public class CourseService {
         else {
             throw new ResourceNotFoundException("Course not found");
         }
-
+    }
+      public List<Course> getCoursesByDepartmentId(Long departmentId) {
+    return courseRepository.findByDepartmentDeptId(departmentId);
+              }
 
     }
-}
+
 

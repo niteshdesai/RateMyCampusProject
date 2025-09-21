@@ -154,6 +154,19 @@ public class DepartmentAdminController {
         return ResponseEntity.ok("Department Admin deleted successfully");
     }
     
+    // ✅ Get by Department ID
+    @GetMapping("/department/{departmentId}")
+    public ResponseEntity<?> getDeptAdminByDepartmentId(@PathVariable Long departmentId) {
+        DepartmentAdmin admin = service.getHodByDepartmentId(departmentId);
+
+
+        if (admin != null) {
+            return ResponseEntity.ok(admin);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Department Admin not found for department ID: " + departmentId);
+        }
+    }
     
     private boolean isImageFile(MultipartFile file) {
 		String contentType = file.getContentType();
