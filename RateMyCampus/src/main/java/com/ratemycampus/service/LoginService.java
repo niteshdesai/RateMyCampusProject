@@ -35,7 +35,7 @@ public class LoginService {
         if (student != null) {
             // Always store the provided collegeId in the JWT
             String JWTtoken= jwtUtil.generateToken(student.getEnrollment(), "STUDENT", collegeId);
-            System.out.println(JWTtoken);
+
             return JWTtoken;
         }
         return null;

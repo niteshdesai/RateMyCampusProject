@@ -68,6 +68,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/departments/*/teachers/count").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/departments/*/courses/count").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/courses/department/*").permitAll()
+
+
+                        .requestMatchers(HttpMethod.GET, "/api/teachers/{teacherId}/courses")
+                        .permitAll()
                         // Protected endpoints
                         .requestMatchers(HttpMethod.POST, "/api/courses").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/courses/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")

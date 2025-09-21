@@ -300,6 +300,45 @@ public final class DtoMapper {
         dto.collegeId = a.getCollege() != null ? a.getCollege().getCid() : null;
         return dto;
     }
+    
+    public static TeacherCourse toTeacherCourseEntity(TeacherCourseDTO dto) {
+        if (dto == null) return null;
+        TeacherCourse tc = new TeacherCourse();
+        tc.setId(dto.id);
+        
+        if (dto.teacherId != null) {
+            Teacher t = new Teacher();
+            t.setTid(dto.teacherId);
+            tc.setTeacher(t);
+        }
+        
+        if (dto.courseId != null) {
+            Course c = new Course();
+            c.setC_id(dto.courseId);
+            tc.setCourse(c);
+        }
+        
+        return tc;
+    }
+    
+    public static TeacherCourseDTO toTeacherCourseDTO(TeacherCourse tc) {
+        if (tc == null) return null;
+        TeacherCourseDTO dto = new TeacherCourseDTO();
+        dto.id = tc.getId();
+        dto.teacherId = tc.getTeacher() != null ? tc.getTeacher().getTid() : null;
+        dto.courseId = tc.getCourse() != null ? tc.getCourse().getC_id() : null;
+        
+        // Populate additional fields for display purposes
+        if (tc.getTeacher() != null) {
+            dto.teacherName = tc.getTeacher().getTname();
+        }
+        
+        if (tc.getCourse() != null) {
+            dto.courseName = tc.getCourse().getcName();
+        }
+        
+        return dto;
+    }
 }
 
 

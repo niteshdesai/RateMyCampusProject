@@ -1,5 +1,7 @@
 package com.ratemycampus.controller;
 
+import com.ratemycampus.dto.DtoMapper;
+import com.ratemycampus.dto.TeacherCourseDTO;
 import com.ratemycampus.entity.Course;
 import com.ratemycampus.entity.Teacher;
 import com.ratemycampus.entity.TeacherCourse;
@@ -26,7 +28,10 @@ public class TeacherCourseController {
     @GetMapping
     public ResponseEntity<?> list(@PathVariable Integer teacherId) {
         List<TeacherCourse> list = teacherCourseRepository.findByTeacher_Tid(teacherId);
-        return ResponseEntity.ok(list);
+        List<TeacherCourseDTO> dtoList = list.stream()
+                .map(DtoMapper::toTeacherCourseDTO)
+                .toList();
+        return ResponseEntity.ok(dtoList);
     }
 
     // Teachers by course id
@@ -34,7 +39,11 @@ public class TeacherCourseController {
     public ResponseEntity<?> teachersByCourse(@PathVariable Integer teacherId, @RequestParam("courseId") Integer courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
-        return ResponseEntity.ok(teacherCourseRepository.findByCourse(course));
+        List<TeacherCourse> teacherCourses = teacherCourseRepository.findByCourse(course);
+        List<TeacherCourseDTO> dtoList = teacherCourses.stream()
+                .map(DtoMapper::toTeacherCourseDTO)
+                .toList();
+        return ResponseEntity.ok(dtoList);
     }
 
     public static class CourseIdsRequest {
@@ -62,7 +71,8 @@ public class TeacherCourseController {
 
                 if (!teacherCourseRepository.existsByTeacher_TidAndCourse(teacherId, course)) {
                     TeacherCourse tc = new TeacherCourse(teacher, course);
-                    created.add(teacherCourseRepository.save(tc));
+                    TeacherCourse savedTc = teacherCourseRepository.save(tc);
+                    created.add(savedTc);
                 }
                 else
                 {
@@ -72,7 +82,10 @@ public class TeacherCourseController {
                 }
             }
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            List<TeacherCourseDTO> createdDtos = created.stream()
+                    .map(DtoMapper::toTeacherCourseDTO)
+                    .toList();
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdDtos);
         }catch (EntityNotFoundException e)
         {
             HashMap<String, String> errors = new HashMap<>();
