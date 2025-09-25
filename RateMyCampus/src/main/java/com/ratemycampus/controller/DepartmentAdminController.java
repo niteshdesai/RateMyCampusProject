@@ -174,19 +174,23 @@ public class DepartmentAdminController {
 				|| contentType.equals("image/jpg"));
 	}
 
-	private String saveImage(MultipartFile image) throws IOException {
-		String uploadDir = "uploads/department-admin-images/";
-		File dir = new File(uploadDir);
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		String originalFilename = image.getOriginalFilename();
-		String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-		String uniqueFileName = java.util.UUID.randomUUID().toString() + fileExtension;
-		Path filePath = Paths.get(uploadDir, uniqueFileName);
-		Files.copy(image.getInputStream(), filePath);
-		return uniqueFileName;
-	}
+    private String saveImage(MultipartFile image) throws IOException {
+        String uploadDir = "uploads/Department-admin-images/";
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String originalFileName = image.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFileName != null && originalFileName.contains(".")) {
+            fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        }
+        String fileName = java.util.UUID.randomUUID() + fileExtension;
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(image.getInputStream(), filePath);
+        // Return relative path for storage in DB
+        return uploadDir + fileName;
+    }
     
 }
 

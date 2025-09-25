@@ -148,25 +148,20 @@ public class CollegeAdminController {
 	}
 
 	private String saveImage(MultipartFile image) throws IOException {
-		Path filePath = null;
-		String fileName = "";
-		try {
-			String uploadDir = new ClassPathResource("static/image").getFile().getAbsolutePath();
-			Path uploadPath = Paths.get(uploadDir);
-
-			if (!Files.exists(uploadPath)) {
-				Files.createDirectories(uploadPath);
-			}
-			fileName = image.getOriginalFilename();
-
-			filePath = uploadPath.resolve(fileName);
-
-			Files.copy(image.getInputStream(), filePath);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.getMessage());
-		}
-		return fileName;
+        String uploadDir = "uploads/college-admin-images/";
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String originalFileName = image.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFileName != null && originalFileName.contains(".")) {
+            fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        }
+        String fileName = java.util.UUID.randomUUID() + fileExtension;
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(image.getInputStream(), filePath);
+        // Return relative path for storage in DB
+        return uploadDir + fileName;
 	}
 }

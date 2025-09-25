@@ -183,20 +183,21 @@ public class StudentController {
     }
 
     private String saveImage(MultipartFile image) throws IOException {
-            String uploadDir = "uploads/student-images/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            String originalFileName = image.getOriginalFilename();
-            String fileExtension = "";
-            if (originalFileName != null && originalFileName.contains(".")) {
-                fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            }
-            String fileName = java.util.UUID.randomUUID() + fileExtension;
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(image.getInputStream(), filePath);
-            return uploadDir + fileName;
+        String uploadDir = "uploads/student-images/";
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String originalFileName = image.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFileName != null && originalFileName.contains(".")) {
+            fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        }
+        String fileName = java.util.UUID.randomUUID() + fileExtension;
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(image.getInputStream(), filePath);
+        // Return relative path for storage in DB
+        return uploadDir + fileName;
     }
 
 }
