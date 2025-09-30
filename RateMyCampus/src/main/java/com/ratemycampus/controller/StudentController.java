@@ -1,11 +1,10 @@
 package com.ratemycampus.controller;
 
 import com.ratemycampus.entity.Student;
-import com.ratemycampus.entity.Teacher;
 import com.ratemycampus.service.StudentService;
+import com.ratemycampus.security.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -29,9 +28,9 @@ public class StudentController {
 
     @Autowired
     private StudentService studentService;
-    
+
     @Autowired
-    private CollegeController collegeController;
+    private SecurityUtils securityUtils;
     
     @GetMapping
     public ResponseEntity<List<Student>> getAll() {
@@ -80,6 +79,18 @@ public class StudentController {
       	
       	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
       	 }
+      	 
+      	 // Validate department ownership for HOD role
+      	 String currentUserRole = securityUtils.getCurrentUserRole();
+      	 if ("ROLE_HOD".equals(currentUserRole)) {
+      	     Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+      	     if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(student.getDepartment().getDeptId())) {
+      	         HashMap<String, String> errors = new HashMap<>();
+      	         errors.put("error", "You can only add students to your own department");
+      	         return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+      	     }
+      	 }
+      	 
            if (image != null && !image.isEmpty()) {
                if (!isImageFile(image)) {
                    HashMap<String, String> errors = new HashMap<>();
@@ -101,11 +112,29 @@ public class StudentController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@Valid @RequestBody Student student,BindingResult result , @PathVariable Long id) {
         
-    	Student oldStudent = studentService.getStudentById(id);
-		student.setSimg(oldStudent.getSimg());
-	
-    	
     	try {
+    		Student oldStudent = studentService.getStudentById(id);
+    		
+    		// Validate department ownership for HOD role
+    		String currentUserRole = securityUtils.getCurrentUserRole();
+    		if ("ROLE_HOD".equals(currentUserRole)) {
+    		    Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+    		    if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(oldStudent.getDepartment().getDeptId())) {
+    		        HashMap<String, String> errors = new HashMap<>();
+    		        errors.put("error", "You can only update students that belong to your department");
+    		        return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+    		    }
+    		    
+    		    // Ensure the updated student also belongs to the same department
+    		    if (!currentUserDepartmentId.equals(student.getDepartment().getDeptId())) {
+    		        HashMap<String, String> errors = new HashMap<>();
+    		        errors.put("error", "You cannot change the department of a student");
+    		        return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+    		    }
+    		}
+    		
+    		student.setSimg(oldStudent.getSimg());
+    		
 			if (result.hasErrors()) {
 				Map<String, String> errors = new HashMap<>();
 				result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
@@ -117,17 +146,28 @@ public class StudentController {
 			return ResponseEntity.ok(updatedData);
 		} catch (Exception e) {
 			HashMap<String, String> errors = new HashMap<>();
-			errors.put("error", "Failed to Update college: " + e.getMessage());
+			errors.put("error", "Failed to Update student: " + e.getMessage());
 			return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 		}
-    	
     }
     @PutMapping(value = "/updateStudentImage/{Id}", consumes = { "multipart/form-data" })
    	public ResponseEntity<?> updateStudentImage(@PathVariable Long Id,
    			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-           Student oldStudent = studentService.getStudentById(Id);
-           String prevImage = oldStudent.getSimg();
            try {
+               Student oldStudent = studentService.getStudentById(Id);
+               
+               // Validate department ownership for HOD role
+               String currentUserRole = securityUtils.getCurrentUserRole();
+               if ("ROLE_HOD".equals(currentUserRole)) {
+                   Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+                   if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(oldStudent.getDepartment().getDeptId())) {
+                       HashMap<String, String> errors = new HashMap<>();
+                       errors.put("error", "You can only update student images that belong to your department");
+                       return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+                   }
+               }
+               
+               String prevImage = oldStudent.getSimg();
                if (image != null && !image.isEmpty()) {
                    if (!isImageFile(image)) {
                        HashMap<String, String> errors = new HashMap<>();
@@ -143,20 +183,38 @@ public class StudentController {
                    String imagePath = saveImage(image);
                    oldStudent.setSimg(imagePath);
                }
+               
+               Student updated = studentService.updateStudent(Id, oldStudent);
+               return ResponseEntity.ok(updated);
            } catch (Exception e) {
                HashMap<String, String> errors = new HashMap<>();
                errors.put("error", e.getMessage());
                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
            }
-
-           Student updated = studentService.updateStudent(Id, oldStudent);
-           return ResponseEntity.ok(updated);
    	}
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        studentService.deleteStudent(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            // Validate department ownership for HOD role
+            String currentUserRole = securityUtils.getCurrentUserRole();
+            if ("ROLE_HOD".equals(currentUserRole)) {
+                Student existingStudent = studentService.getStudentById(id);
+                Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+                if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(existingStudent.getDepartment().getDeptId())) {
+                    HashMap<String, String> errors = new HashMap<>();
+                    errors.put("error", "You can only delete students that belong to your department");
+                    return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+                }
+            }
+            
+            studentService.deleteStudent(id);
+            return ResponseEntity.ok("Student deleted successfully");
+        } catch (Exception e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
     }
     
     @GetMapping("/college/{collegeId}")

@@ -7,23 +7,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-//import com.ratemycampus.service.DepartmentService;
 
-import com.ratemycampus.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ratemycampus.entity.College;
 import com.ratemycampus.entity.DepartmentAdmin;
 import com.ratemycampus.service.DepartmentAdminService;
+import com.ratemycampus.security.SecurityUtils;
 
 @RestController
 @CrossOrigin
@@ -34,6 +30,9 @@ public class DepartmentAdminController {
 
     @Autowired
     private DepartmentAdminService service;
+
+    @Autowired
+    private SecurityUtils securityUtils;
 
 
 
@@ -49,6 +48,15 @@ public class DepartmentAdminController {
 				});
 				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 			}
+			
+			// Validate college ownership
+			Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+			if (currentUserCollegeId == null || !currentUserCollegeId.equals(admin.getCollege().getCid())) {
+				HashMap<String, String> errors = new HashMap<>();
+				errors.put("error", "You can only create HODs for your own college");
+				return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+			}
+			
 			if (image != null && !image.isEmpty()) {
 				if (!isImageFile(image)) {
 					HashMap<String, String> errors = new HashMap<>();
@@ -103,7 +111,25 @@ public class DepartmentAdminController {
 				});
 				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 			}
-        updatedAdmin.setDaImg(service.getHodById(id).getDaImg());
+			
+		// Validate college ownership
+		Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+		DepartmentAdmin existingAdmin = service.getHodById(id);
+		
+		if (currentUserCollegeId == null || !currentUserCollegeId.equals(existingAdmin.getCollege().getCid())) {
+			HashMap<String, String> errors = new HashMap<>();
+			errors.put("error", "You can only update HODs that belong to your college");
+			return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+		}
+		
+		// Ensure the updated admin also belongs to the same college
+		if (!currentUserCollegeId.equals(updatedAdmin.getCollege().getCid())) {
+			HashMap<String, String> errors = new HashMap<>();
+			errors.put("error", "You cannot change the college of a HOD");
+			return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+		}
+		
+        updatedAdmin.setDaImg(existingAdmin.getDaImg());
         return ResponseEntity.ok(service.updateHod(id, updatedAdmin));
     	}
     	catch (Exception e) {
@@ -111,17 +137,23 @@ public class DepartmentAdminController {
 			errors.put("error", "Failed to Update Department Admin: " + e.getMessage());
 			return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 		}
-    	
-    	
-    	
     }
     
 	@PutMapping(value = "/updateDeptAdminImage/{Id}", consumes = { "multipart/form-data" })
 	public ResponseEntity<?> updateDeptAdminImage(@PathVariable Integer Id,
 												 @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		DepartmentAdmin deptAdmin = service.getHodById(Id);
-		String prevImage = deptAdmin.getDaImg();
 		try {
+			// Validate college ownership
+			Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+			DepartmentAdmin deptAdmin = service.getHodById(Id);
+			
+			if (currentUserCollegeId == null || !currentUserCollegeId.equals(deptAdmin.getCollege().getCid())) {
+				HashMap<String, String> errors = new HashMap<>();
+				errors.put("error", "You can only update HOD images that belong to your college");
+				return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+			}
+			
+			String prevImage = deptAdmin.getDaImg();
 			if (image != null && !image.isEmpty()) {
 				if (!isImageFile(image)) {
 					HashMap<String, String> errors = new HashMap<>();
@@ -150,8 +182,24 @@ public class DepartmentAdminController {
     // ✅ Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDeptAdmin(@PathVariable Integer id) {
-    	service.deleteHodById(id);
-        return ResponseEntity.ok("Department Admin deleted successfully");
+    	try {
+    		// Validate college ownership
+    		Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+    		DepartmentAdmin existingAdmin = service.getHodById(id);
+    		
+    		if (currentUserCollegeId == null || !currentUserCollegeId.equals(existingAdmin.getCollege().getCid())) {
+    			HashMap<String, String> errors = new HashMap<>();
+    			errors.put("error", "You can only delete HODs that belong to your college");
+    			return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+    		}
+    		
+    		service.deleteHodById(id);
+    		return ResponseEntity.ok("Department Admin deleted successfully");
+    	} catch (Exception e) {
+    		HashMap<String, String> errors = new HashMap<>();
+    		errors.put("error", e.getMessage());
+    		return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    	}
     }
     
     // ✅ Get by Department ID

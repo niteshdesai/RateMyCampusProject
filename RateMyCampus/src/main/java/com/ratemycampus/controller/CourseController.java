@@ -3,7 +3,7 @@ package com.ratemycampus.controller;
 import com.ratemycampus.entity.Course;
 import com.ratemycampus.exception.ResourceNotFoundException;
 import com.ratemycampus.service.CourseService;
-import jakarta.persistence.EntityNotFoundException;
+import com.ratemycampus.security.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +23,9 @@ public class CourseController {
     @Autowired
     private CourseService courseService;
 
+    @Autowired
+    private SecurityUtils securityUtils;
+
     @PostMapping
     public ResponseEntity<?> createCourse(@Valid @RequestBody Course course,BindingResult result) {
     	 try {
@@ -35,6 +38,17 @@ public class CourseController {
      	        });
      	
      	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+     	 }
+     	 
+     	 // Validate department ownership for HOD role
+     	 String currentUserRole = securityUtils.getCurrentUserRole();
+     	 if ("ROLE_HOD".equals(currentUserRole)) {
+     	     Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+     	     if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(course.getDepartment().getDeptId())) {
+     	         HashMap<String, String> errors = new HashMap<>();
+     	         errors.put("error", "You can only create courses for your own department");
+     	         return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+     	     }
      	 }
      	
          Course saved = courseService.addCourse(course);
@@ -49,6 +63,25 @@ public class CourseController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCourse(@PathVariable Integer id, @Valid @RequestBody Course course) {
         try {
+            // Validate department ownership for HOD role
+            String currentUserRole = securityUtils.getCurrentUserRole();
+            if ("ROLE_HOD".equals(currentUserRole)) {
+                Course existingCourse = courseService.getCourseById(id);
+                Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+                if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(existingCourse.getDepartment().getDeptId())) {
+                    HashMap<String, String> errors = new HashMap<>();
+                    errors.put("error", "You can only update courses that belong to your department");
+                    return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+                }
+                
+                // Ensure the updated course also belongs to the same department
+                if (!currentUserDepartmentId.equals(course.getDepartment().getDeptId())) {
+                    HashMap<String, String> errors = new HashMap<>();
+                    errors.put("error", "You cannot change the department of a course");
+                    return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+                }
+            }
+            
             Course updatedCourse = courseService.updateCourse(id, course);
             return ResponseEntity.ok(updatedCourse);
         } catch (ResourceNotFoundException e) {
@@ -61,6 +94,18 @@ public class CourseController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable Integer id) {
         try {
+            // Validate department ownership for HOD role
+            String currentUserRole = securityUtils.getCurrentUserRole();
+            if ("ROLE_HOD".equals(currentUserRole)) {
+                Course existingCourse = courseService.getCourseById(id);
+                Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+                if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(existingCourse.getDepartment().getDeptId())) {
+                    HashMap<String, String> errors = new HashMap<>();
+                    errors.put("error", "You can only delete courses that belong to your department");
+                    return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+                }
+            }
+            
             courseService.deleteCourse(id);
             return ResponseEntity.ok("Course deleted successfully");
         } catch (ResourceNotFoundException e) {

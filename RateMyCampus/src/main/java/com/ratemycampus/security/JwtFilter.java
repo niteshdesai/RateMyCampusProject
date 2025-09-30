@@ -30,9 +30,19 @@ public class JwtFilter extends OncePerRequestFilter {
             if(jwtUtil.validateToken(token)) {
                 String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
+                Long collegeId = jwtUtil.extractCollegeId(token);
+                Long departmentId = jwtUtil.extractDepartmentId(token);
 
+                // Create authentication with college ID and department ID stored in details
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(username, null, List.of(() -> "ROLE_" + role));
+                
+                // Store both college ID and department ID in details as a map
+                java.util.Map<String, Long> details = new java.util.HashMap<>();
+                details.put("collegeId", collegeId);
+                details.put("departmentId", departmentId);
+                authentication.setDetails(details);
+                
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

@@ -2,6 +2,7 @@ package com.ratemycampus.controller;
 
 import com.ratemycampus.entity.Department;
 import com.ratemycampus.service.DepartmentService;
+import com.ratemycampus.security.SecurityUtils;
 
 import jakarta.validation.Valid;
 
@@ -22,6 +23,9 @@ public class DepartmentController {
     @Autowired
     private DepartmentService departmentService;
 
+    @Autowired
+    private SecurityUtils securityUtils;
+
     @PostMapping
     public ResponseEntity<?> addDepartment(@Valid @RequestBody Department department,BindingResult result) {
     	
@@ -35,6 +39,15 @@ public class DepartmentController {
 	        
 	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 	 }
+	 
+	 // Validate college ownership
+	 Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+	 if (currentUserCollegeId == null || !currentUserCollegeId.equals(department.getCollege().getCid())) {
+	     HashMap<String, String> errors = new HashMap<>();
+	     errors.put("error", "You can only create departments for your own college");
+	     return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+	 }
+	 
     	Department saveDepartment=departmentService.saveDepartment(department);
     	return new ResponseEntity<>(saveDepartment, HttpStatus.CREATED);
     	} catch (Exception e) {
@@ -70,14 +83,54 @@ public class DepartmentController {
     }
 
     @PutMapping("/{id}")
-    public Department updateDepartment(@PathVariable Long id, @RequestBody Department department) {
-        return departmentService.updateDepartment(id, department);
+    public ResponseEntity<?> updateDepartment(@PathVariable Long id, @RequestBody Department department) {
+        try {
+            // Validate college ownership
+            Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+            Department existingDepartment = departmentService.getDepartmentById(id);
+            
+            if (currentUserCollegeId == null || !currentUserCollegeId.equals(existingDepartment.getCollege().getCid())) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("error", "You can only update departments that belong to your college");
+                return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+            
+            // Ensure the updated department also belongs to the same college
+            if (!currentUserCollegeId.equals(department.getCollege().getCid())) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("error", "You cannot change the college of a department");
+                return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+            
+            Department updatedDepartment = departmentService.updateDepartment(id, department);
+            return ResponseEntity.ok(updatedDepartment);
+        } catch (Exception e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDepartment(@PathVariable Long id) {
-
-        departmentService.deleteDepartment(id);
+    public ResponseEntity<?> deleteDepartment(@PathVariable Long id) {
+        try {
+            // Validate college ownership
+            Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
+            Department existingDepartment = departmentService.getDepartmentById(id);
+            
+            if (currentUserCollegeId == null || !currentUserCollegeId.equals(existingDepartment.getCollege().getCid())) {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("error", "You can only delete departments that belong to your college");
+                return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+            
+            departmentService.deleteDepartment(id);
+            return ResponseEntity.ok("Department deleted successfully");
+        } catch (Exception e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
     }
     
     @GetMapping("/{id}/students/count")

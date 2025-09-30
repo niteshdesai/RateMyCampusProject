@@ -43,8 +43,8 @@ public class LoginService {
 
     public String loginHod(String email, String password) {
         DepartmentAdmin hod = deptAdminRepo.findByEmailAndPassword(email, password);
-        if (hod != null && hod.getCollege().getCid() != null) {
-            return jwtUtil.generateToken(hod.getEmail(), "HOD",hod.getCollege().getCid());
+        if (hod != null && hod.getCollege().getCid() != null && hod.getDepartment().getDeptId() != null) {
+            return jwtUtil.generateToken(hod.getEmail(), "HOD", hod.getCollege().getCid(), hod.getDepartment().getDeptId());
         }
         return null;
     }

@@ -28,6 +28,21 @@ public class JwtUtil {
         return builder.signWith(SECRET_KEY).compact();
     }
 
+    public String generateToken(String username, String role, Long collegeId, Long departmentId) {
+        var builder = Jwts.builder()
+                .setSubject(username)
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+        if (collegeId != null) {
+            builder.claim("collegeId", collegeId);
+        }
+        if (departmentId != null) {
+            builder.claim("departmentId", departmentId);
+        }
+        return builder.signWith(SECRET_KEY).compact();
+    }
+
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
@@ -38,6 +53,15 @@ public class JwtUtil {
 
     public Long extractCollegeId(String token) {
         Object val = extractAllClaims(token).get("collegeId");
+        if (val == null) return null;
+        if (val instanceof Integer) return ((Integer) val).longValue();
+        if (val instanceof Long) return (Long) val;
+        if (val instanceof String) return Long.parseLong((String) val);
+        return null;
+    }
+
+    public Long extractDepartmentId(String token) {
+        Object val = extractAllClaims(token).get("departmentId");
         if (val == null) return null;
         if (val instanceof Integer) return ((Integer) val).longValue();
         if (val instanceof Long) return (Long) val;

@@ -1,15 +1,12 @@
 package com.ratemycampus.controller;
 
 
-import com.ratemycampus.entity.College;
-import com.ratemycampus.entity.Course;
-import com.ratemycampus.entity.Student;
 import com.ratemycampus.entity.Teacher;
 import com.ratemycampus.service.TeacherService;
+import com.ratemycampus.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +29,8 @@ public class TeacherController {
 
     @Autowired private TeacherService teacherService;
 
+    @Autowired private SecurityUtils securityUtils;
+
 	@PostMapping(consumes = {"multipart/form-data"})
 	public ResponseEntity<?> addTeacher(@Valid @RequestPart Teacher teacher,
 										BindingResult result,
@@ -45,6 +44,18 @@ public class TeacherController {
 				});
 				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 			}
+			
+			// Validate department ownership for HOD role
+			String currentUserRole = securityUtils.getCurrentUserRole();
+			if ("ROLE_HOD".equals(currentUserRole)) {
+				Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+				if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(teacher.getDepartment().getDeptId())) {
+					HashMap<String, String> errors = new HashMap<>();
+					errors.put("error", "You can only add teachers to your own department");
+					return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+				}
+			}
+			
 			if (image != null && !image.isEmpty()) {
 				if (!isImageFile(image)) {
 					HashMap<String, String> errors = new HashMap<>();
@@ -89,11 +100,29 @@ public class TeacherController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTeacher(@Valid @RequestBody Teacher updated,BindingResult result,  @PathVariable Integer id) {
-    	Teacher teacher = teacherService.getTeacherById(id);
-		updated.setTimg(teacher.getTimg());
-        
-    	
     	try {
+    		Teacher teacher = teacherService.getTeacherById(id);
+    		
+    		// Validate department ownership for HOD role
+    		String currentUserRole = securityUtils.getCurrentUserRole();
+    		if ("ROLE_HOD".equals(currentUserRole)) {
+    		    Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+    		    if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(teacher.getDepartment().getDeptId())) {
+    		        HashMap<String, String> errors = new HashMap<>();
+    		        errors.put("error", "You can only update teachers that belong to your department");
+    		        return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+    		    }
+    		    
+    		    // Ensure the updated teacher also belongs to the same department
+    		    if (!currentUserDepartmentId.equals(updated.getDepartment().getDeptId())) {
+    		        HashMap<String, String> errors = new HashMap<>();
+    		        errors.put("error", "You cannot change the department of a teacher");
+    		        return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+    		    }
+    		}
+    		
+    		updated.setTimg(teacher.getTimg());
+    		
 			if (result.hasErrors()) {
 				Map<String, String> errors = new HashMap<>();
 				result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
@@ -105,18 +134,28 @@ public class TeacherController {
 			return ResponseEntity.ok(updatedData);
 		} catch (Exception e) {
 			HashMap<String, String> errors = new HashMap<>();
-			errors.put("error", "Failed to Update college: " + e.getMessage());
+			errors.put("error", "Failed to Update teacher: " + e.getMessage());
 			return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 		}
-    	
-    	
     }
 	@PutMapping(value = "/updateTeacherImage/{Id}", consumes = { "multipart/form-data" })
 	public ResponseEntity<?> updateTeacherImage(@PathVariable Integer Id,
 											   @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		Teacher teacher = teacherService.getTeacherById(Id);
-		String prevImage = teacher.getTimg();
 		try {
+			Teacher teacher = teacherService.getTeacherById(Id);
+			
+			// Validate department ownership for HOD role
+			String currentUserRole = securityUtils.getCurrentUserRole();
+			if ("ROLE_HOD".equals(currentUserRole)) {
+				Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+				if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(teacher.getDepartment().getDeptId())) {
+					HashMap<String, String> errors = new HashMap<>();
+					errors.put("error", "You can only update teacher images that belong to your department");
+					return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+				}
+			}
+			
+			String prevImage = teacher.getTimg();
 			if (image != null && !image.isEmpty()) {
 				if (!isImageFile(image)) {
 					HashMap<String, String> errors = new HashMap<>();
@@ -145,9 +184,27 @@ public class TeacherController {
     // New endpoints for managing teacher courses via TeacherCourse join table could be added
     // in a dedicated controller or here under /api/teachers/{teacherId}/courses
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTeacher(@PathVariable Integer id) {
-        teacherService.deleteTeacher(id);
-        return ResponseEntity.ok("Teacher deleted successfully");
+    public ResponseEntity<?> deleteTeacher(@PathVariable Integer id) {
+        try {
+            // Validate department ownership for HOD role
+            String currentUserRole = securityUtils.getCurrentUserRole();
+            if ("ROLE_HOD".equals(currentUserRole)) {
+                Teacher existingTeacher = teacherService.getTeacherById(id);
+                Long currentUserDepartmentId = securityUtils.getCurrentUserDepartmentId();
+                if (currentUserDepartmentId == null || !currentUserDepartmentId.equals(existingTeacher.getDepartment().getDeptId())) {
+                    HashMap<String, String> errors = new HashMap<>();
+                    errors.put("error", "You can only delete teachers that belong to your department");
+                    return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+                }
+            }
+            
+            teacherService.deleteTeacher(id);
+            return ResponseEntity.ok("Teacher deleted successfully");
+        } catch (Exception e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
     }
     
     

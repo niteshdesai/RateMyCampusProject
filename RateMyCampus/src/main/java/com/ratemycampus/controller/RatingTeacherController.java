@@ -1,7 +1,7 @@
 package com.ratemycampus.controller;
 
-import com.ratemycampus.entity.Rating;
 import com.ratemycampus.entity.RatingTeacher;
+import com.ratemycampus.security.SecurityUtils;
 import com.ratemycampus.service.RatingTeacherService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,9 @@ public class RatingTeacherController {
 	@Autowired
 	private RatingTeacherService service;
 
+	@Autowired
+	private SecurityUtils securityUtils;
+
 	@PostMapping
 	public ResponseEntity<?> addRating(@Valid @RequestBody RatingTeacher rating, BindingResult result) {
 
@@ -32,6 +35,26 @@ public class RatingTeacherController {
 				});
 
 				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+			}
+
+			// Security check: Ensure the student ID in the request matches the authenticated student
+			Integer currentStudentId = securityUtils.getCurrentStudentId();
+			if (currentStudentId == null) {
+				HashMap<String, String> errors = new HashMap<>();
+				errors.put("error", "Authentication required");
+				return new ResponseEntity<>(errors, HttpStatus.UNAUTHORIZED);
+			}
+
+			if (rating.getStudent() == null || rating.getStudent().getSid() == null) {
+				HashMap<String, String> errors = new HashMap<>();
+				errors.put("error", "Student ID is required");
+				return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+			}
+
+			if (!currentStudentId.equals(rating.getStudent().getSid())) {
+				HashMap<String, String> errors = new HashMap<>();
+				errors.put("error", "You can only submit ratings for yourself");
+				return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
 			}
 
 			RatingTeacher saved = service.addRating(rating);
