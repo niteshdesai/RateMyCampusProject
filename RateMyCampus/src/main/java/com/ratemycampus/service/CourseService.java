@@ -6,7 +6,6 @@ import com.ratemycampus.repository.CollegeRepository;
 import com.ratemycampus.repository.CourseRepository;
 import com.ratemycampus.repository.DepartmentRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,18 +28,25 @@ public class CourseService {
         Long deptId = course.getDepartment() != null ? course.getDepartment().getDeptId() : null;
 
         if (collegeId == null) {
-            throw new ResourceNotFoundException("College ID is required");
+            throw new ResourceNotFoundException("College ID is required for creating course");
         }
 
         if (deptId == null) {
-            throw new ResourceNotFoundException("Department ID is required");
+            throw new ResourceNotFoundException("Department ID is required for creating course");
         }
 
         // Fetch actual referenced entities
-        var college = collegeRepository.findById(collegeId)
-            .orElseThrow(() -> new ResourceNotFoundException("College not found with ID: " + collegeId));
-        var department = departmentRepository.findById(deptId)
-            .orElseThrow(() -> new ResourceNotFoundException("Department not found with ID: " + deptId));
+        collegeRepository.findById(collegeId)
+            .orElseThrow(() -> new ResourceNotFoundException("College not found. collegeId=" + collegeId));
+        departmentRepository.findById(deptId)
+            .orElseThrow(() -> new ResourceNotFoundException("Department not found. departmentId=" + deptId));
+
+        // Ensure department belongs to the given college
+        if (!departmentRepository.existsByDeptIdAndCollegeCid(deptId, collegeId)) {
+            throw new ResourceNotFoundException(
+                "Department does not belong to the provided college. departmentId=" + deptId + ", collegeId=" + collegeId
+            );
+        }
 
         // Set attached references
 //        course.setCollege(college);

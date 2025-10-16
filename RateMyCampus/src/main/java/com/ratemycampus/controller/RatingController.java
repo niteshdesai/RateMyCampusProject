@@ -39,16 +39,16 @@ public class RatingController {
         return ResponseEntity.ok(avg);
     }
 
-    @RequestMapping(value = "/addCollegeRating", method = RequestMethod.OPTIONS)
-    public ResponseEntity<Void> handleAddRatingPreflight() {
-        System.out.println("it is execute1");
-        return ResponseEntity.ok()
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "POST, OPTIONS")
-                .header("Access-Control-Allow-Headers", "Authorization, Content-Type")
-                .header("Access-Control-Max-Age", "3600")
-                .build();
-    }
+//    @RequestMapping(value = "/addCollegeRating")
+//    public ResponseEntity<Void> handleAddRatingPreflight() {
+//        System.out.println("it is execute1");
+//        return ResponseEntity.ok()
+//                .header("Access-Control-Allow-Origin", "*")
+//                .header("Access-Control-Allow-Methods", "POST, OPTIONS")
+//                .header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+//                .header("Access-Control-Max-Age", "3600")
+//                .build();
+//    }
 
     @PostMapping("/addCollegeRating")
     public ResponseEntity<?> addRating(@Valid @RequestBody Rating rating, BindingResult result) {

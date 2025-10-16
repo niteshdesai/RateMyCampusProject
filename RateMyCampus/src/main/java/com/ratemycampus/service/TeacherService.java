@@ -65,13 +65,23 @@ public class TeacherService {
     private void validateReferences(Teacher teacher) {
         if (teacher.getCollege() == null || teacher.getCollege().getCid() == null ||
             !collegeRepository.existsById(teacher.getCollege().getCid())) {
-        	
-            throw new EntityNotFoundException("Invalid College ID");
+            Long provided = teacher.getCollege() != null ? teacher.getCollege().getCid() : null;
+            throw new EntityNotFoundException("Invalid College ID. collegeId=" + provided);
         }
 
         if (teacher.getDepartment() == null || teacher.getDepartment().getDeptId() == null ||
             !departmentRepository.existsById(teacher.getDepartment().getDeptId())) {
-            throw new EntityNotFoundException("Invalid Department ID");
+            Long provided = teacher.getDepartment() != null ? teacher.getDepartment().getDeptId() : null;
+            throw new EntityNotFoundException("Invalid Department ID. departmentId=" + provided);
+        }
+
+        // Ensure department belongs to the given college
+        Long collegeId = teacher.getCollege().getCid();
+        Long deptId = teacher.getDepartment().getDeptId();
+        if (!departmentRepository.existsByDeptIdAndCollegeCid(deptId, collegeId)) {
+            throw new EntityNotFoundException(
+                "Department does not belong to the provided college. departmentId=" + deptId + ", collegeId=" + collegeId
+            );
         }
 
     }
