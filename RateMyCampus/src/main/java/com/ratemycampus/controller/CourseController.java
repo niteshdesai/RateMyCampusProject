@@ -1,6 +1,8 @@
 package com.ratemycampus.controller;
 
 import com.ratemycampus.entity.Course;
+import com.ratemycampus.dto.CourseDTO;
+import com.ratemycampus.dto.DtoMapper;
 import com.ratemycampus.exception.ResourceNotFoundException;
 import com.ratemycampus.service.CourseService;
 import com.ratemycampus.security.SecurityUtils;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -119,7 +122,8 @@ public class CourseController {
     public ResponseEntity<?> getCourseById(@PathVariable Integer id) {
         try {
             Course course = courseService.getCourseById(id);
-            return ResponseEntity.ok(course);
+            CourseDTO courseDTO = DtoMapper.toCourseDTO(course);
+            return ResponseEntity.ok(courseDTO);
         } catch (ResourceNotFoundException e) {
             Map<String, String> errors = new HashMap<>();
             errors.put("error", e.getMessage());
@@ -131,7 +135,10 @@ public class CourseController {
     public ResponseEntity<?> getAllCourses() {
         try {
             List<Course> courses = courseService.getAllCourses();
-            return ResponseEntity.ok(courses);
+            List<CourseDTO> courseDTOs = courses.stream()
+                    .map(DtoMapper::toCourseDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(courseDTOs);
         } catch (ResourceNotFoundException e) {
             Map<String, String> errors = new HashMap<>();
             errors.put("error", e.getMessage());
@@ -142,6 +149,9 @@ public class CourseController {
     @GetMapping("/department/{departmentId}")
     public ResponseEntity<?> getCoursesByDepartmentId(@PathVariable Long departmentId) {
         List<Course> courses = courseService.getCoursesByDepartmentId(departmentId);
-        return ResponseEntity.ok(courses);
+        List<CourseDTO> courseDTOs = courses.stream()
+                .map(DtoMapper::toCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(courseDTOs);
     }
 }

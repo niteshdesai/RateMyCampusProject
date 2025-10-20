@@ -1,6 +1,8 @@
 package com.ratemycampus.controller;
 
 import com.ratemycampus.entity.Department;
+import com.ratemycampus.dto.DepartmentDTO;
+import com.ratemycampus.dto.DtoMapper;
 import com.ratemycampus.service.DepartmentService;
 import com.ratemycampus.security.SecurityUtils;
 
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin

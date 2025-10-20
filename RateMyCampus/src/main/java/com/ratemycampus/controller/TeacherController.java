@@ -2,6 +2,8 @@ package com.ratemycampus.controller;
 
 
 import com.ratemycampus.entity.Teacher;
+import com.ratemycampus.dto.TeacherDTO;
+import com.ratemycampus.dto.DtoMapper;
 import com.ratemycampus.service.TeacherService;
 import com.ratemycampus.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -79,23 +82,37 @@ public class TeacherController {
 	}
 
     @GetMapping
-    public ResponseEntity<List<Teacher>> getAllTeachers() {
-        return ResponseEntity.ok(teacherService.getAllTeachers());
+    public ResponseEntity<List<TeacherDTO>> getAllTeachers() {
+        List<Teacher> teachers = teacherService.getAllTeachers();
+        List<TeacherDTO> teacherDTOs = teachers.stream()
+                .map(DtoMapper::toTeacherDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(teacherDTOs);
     }
 
     @GetMapping("/college/{collegeId}")
-    public ResponseEntity<List<Teacher>> getTeachersByCollege(@PathVariable Long collegeId) {
-        return ResponseEntity.ok(teacherService.getTeachersByCollege(collegeId));
+    public ResponseEntity<List<TeacherDTO>> getTeachersByCollege(@PathVariable Long collegeId) {
+        List<Teacher> teachers = teacherService.getTeachersByCollege(collegeId);
+        List<TeacherDTO> teacherDTOs = teachers.stream()
+                .map(DtoMapper::toTeacherDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(teacherDTOs);
     }
 
     @GetMapping("/department/{departmentId}")
-    public ResponseEntity<List<Teacher>> getTeachersByDepartment(@PathVariable Long departmentId) {
-        return ResponseEntity.ok(teacherService.getTeachersByDepartment(departmentId));
+    public ResponseEntity<List<TeacherDTO>> getTeachersByDepartment(@PathVariable Long departmentId) {
+        List<Teacher> teachers = teacherService.getTeachersByDepartment(departmentId);
+        List<TeacherDTO> teacherDTOs = teachers.stream()
+                .map(DtoMapper::toTeacherDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(teacherDTOs);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Teacher> getTeacherById(@PathVariable Integer id) {
-        return ResponseEntity.ok(teacherService.getTeacherById(id));
+    public ResponseEntity<TeacherDTO> getTeacherById(@PathVariable Integer id) {
+        Teacher teacher = teacherService.getTeacherById(id);
+        TeacherDTO teacherDTO = DtoMapper.toTeacherDTO(teacher);
+        return ResponseEntity.ok(teacherDTO);
     }
 
     @PutMapping("/{id}")

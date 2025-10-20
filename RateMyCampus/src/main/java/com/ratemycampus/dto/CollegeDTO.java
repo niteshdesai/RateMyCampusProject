@@ -10,6 +10,7 @@ public class CollegeDTO {
 	public String address;
 	public String cimg;
 	public String email;
+	public String collegeType;
 }
 
 

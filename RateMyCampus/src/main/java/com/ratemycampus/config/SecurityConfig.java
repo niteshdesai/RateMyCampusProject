@@ -11,12 +11,28 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
 
     @Autowired
     private JwtFilter jwtFilter;
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(false);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -26,6 +42,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public (read-only) endpoints
@@ -48,6 +65,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/ratings/college/{collegeId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ratings/college/{collegeId}/student-count").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ratings").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ratings/addCollegeRating").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/college-rating-criteria/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/teacher-rating-criteria/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/rating-teachers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/rating-teachers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/students").permitAll()
@@ -90,9 +110,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/departments").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/departments/{id}").hasAuthority("ROLE_HOD")
                         .requestMatchers(HttpMethod.DELETE, "/api/departments/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        .requestMatchers("/api/ratings/addCollegeRating").hasAuthority("ROLE_STUDENT")
+                        // .requestMatchers("/api/ratings/addCollegeRating").hasAuthority("ROLE_STUDENT") // Temporarily disabled for testing
 //                        .requestMatchers(HttpMethod.PUT, "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
+                        .requestMatchers(HttpMethod.POST, "/api/college-rating-criteria").hasAuthority("ROLE_STUDENT")
+                        .requestMatchers(HttpMethod.POST, "/api/teacher-rating-criteria").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/rating-teachers").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.PUT, "/api/rating-teachers/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/rating-teachers/{id}").hasAuthority("ROLE_STUDENT")

@@ -163,6 +163,7 @@ public final class DtoMapper {
         c.setAddress(dto.address);
         c.setCimg(dto.cimg);
         c.setEmail(dto.email);
+        c.setCollegeType(dto.collegeType);
         return c;
     }
 
@@ -176,6 +177,7 @@ public final class DtoMapper {
         dto.address = c.getAddress();
         dto.cimg = c.getCimg();
         dto.email = c.getEmail();
+        dto.collegeType = c.getCollegeType();
         return dto;
     }
 
@@ -337,6 +339,76 @@ public final class DtoMapper {
             dto.courseName = tc.getCourse().getcName();
         }
         
+        return dto;
+    }
+    
+    // CollegeRatingCriteria
+    public static CollegeRatingCriteria toCollegeRatingCriteriaEntity(CollegeRatingCriteriaDTO dto) {
+        if (dto == null) return null;
+        CollegeRatingCriteria entity = new CollegeRatingCriteria();
+        entity.setId(dto.id);
+        entity.setExtracurricularActivities(dto.extracurricularActivities);
+        entity.setSportsFacilities(dto.sportsFacilities);
+        entity.setCampusFacilities(dto.campusFacilities);
+        
+        if (dto.collegeId != null) {
+            College college = new College();
+            college.setCid(dto.collegeId);
+            entity.setCollege(college);
+        }
+        
+        if (dto.studentId != null) {
+            Student student = new Student();
+            student.setSid(dto.studentId);
+            entity.setStudent(student);
+        }
+        
+        return entity;
+    }
+
+    public static CollegeRatingCriteriaDTO toCollegeRatingCriteriaDTO(CollegeRatingCriteria entity) {
+        if (entity == null) return null;
+        CollegeRatingCriteriaDTO dto = new CollegeRatingCriteriaDTO();
+        dto.id = entity.getId();
+        dto.extracurricularActivities = entity.getExtracurricularActivities();
+        dto.sportsFacilities = entity.getSportsFacilities();
+        dto.campusFacilities = entity.getCampusFacilities();
+        dto.collegeId = entity.getCollege() != null ? entity.getCollege().getCid() : null;
+        dto.studentId = entity.getStudent() != null ? entity.getStudent().getSid() : null;
+        return dto;
+    }
+    
+    // TeacherRatingCriteria
+    public static TeacherRatingCriteria toTeacherRatingCriteriaEntity(TeacherRatingCriteriaDTO dto) {
+        if (dto == null) return null;
+        TeacherRatingCriteria entity = new TeacherRatingCriteria();
+        entity.setId(dto.id);
+        entity.setSubjectKnowledge(dto.subjectKnowledge);
+        entity.setCommunicationSkills(dto.communicationSkills);
+        
+        if (dto.teacherId != null) {
+            Teacher teacher = new Teacher();
+            teacher.setTid(dto.teacherId);
+            entity.setTeacher(teacher);
+        }
+        
+        if (dto.studentId != null) {
+            Student student = new Student();
+            student.setSid(dto.studentId);
+            entity.setStudent(student);
+        }
+        
+        return entity;
+    }
+
+    public static TeacherRatingCriteriaDTO toTeacherRatingCriteriaDTO(TeacherRatingCriteria entity) {
+        if (entity == null) return null;
+        TeacherRatingCriteriaDTO dto = new TeacherRatingCriteriaDTO();
+        dto.id = entity.getId();
+        dto.subjectKnowledge = entity.getSubjectKnowledge();
+        dto.communicationSkills = entity.getCommunicationSkills();
+        dto.teacherId = entity.getTeacher() != null ? entity.getTeacher().getTid() : null;
+        dto.studentId = entity.getStudent() != null ? entity.getStudent().getSid() : null;
         return dto;
     }
 }

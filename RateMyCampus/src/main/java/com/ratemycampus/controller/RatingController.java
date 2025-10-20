@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/ratings")
-@CrossOrigin
+
 public class RatingController {
 
     @Autowired

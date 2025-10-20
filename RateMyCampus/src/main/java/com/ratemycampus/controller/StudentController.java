@@ -1,6 +1,8 @@
 package com.ratemycampus.controller;
 
 import com.ratemycampus.entity.Student;
+import com.ratemycampus.dto.StudentDTO;
+import com.ratemycampus.dto.DtoMapper;
 import com.ratemycampus.service.StudentService;
 import com.ratemycampus.security.SecurityUtils;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -33,33 +36,38 @@ public class StudentController {
     private SecurityUtils securityUtils;
     
     @GetMapping
-    public ResponseEntity<List<Student>> getAll() {
-        return ResponseEntity.ok(studentService.getAllStudents());
+    public ResponseEntity<List<StudentDTO>> getAll() {
+        List<Student> students = studentService.getAllStudents();
+        List<StudentDTO> studentDTOs = students.stream()
+                .map(DtoMapper::toStudentDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(studentDTOs);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         try {
-            return ResponseEntity.ok(studentService.getStudentById(id));
+            Student student = studentService.getStudentById(id);
+            StudentDTO studentDTO = DtoMapper.toStudentDTO(student);
+            return ResponseEntity.ok(studentDTO);
         } catch (RuntimeException e) {
             HashMap<String, String> errors = new HashMap<>();
             errors.put("error",e.getMessage());
             return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
-
     }
 
     @GetMapping("/enroll/{enrollmentNumber}")
     public ResponseEntity<?> getByEnrollment(@PathVariable String enrollmentNumber) {
-
         try {
-            return ResponseEntity.ok(studentService.getByEnrollmentNumber(enrollmentNumber));
+            Student student = studentService.getByEnrollmentNumber(enrollmentNumber);
+            StudentDTO studentDTO = DtoMapper.toStudentDTO(student);
+            return ResponseEntity.ok(studentDTO);
         } catch (RuntimeException e) {
             HashMap<String, String> errors = new HashMap<>();
             errors.put("error",e.getMessage());
             return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
-
     }
 
     @PostMapping( value = "/addStudent" ,consumes = {"multipart/form-data"})
@@ -218,18 +226,30 @@ public class StudentController {
     }
     
     @GetMapping("/college/{collegeId}")
-    public ResponseEntity<List<Student>> getStudentsByCollege(@PathVariable Long collegeId) {
-        return ResponseEntity.ok(studentService.getStudentsByCollege(collegeId));
+    public ResponseEntity<List<StudentDTO>> getStudentsByCollege(@PathVariable Long collegeId) {
+        List<Student> students = studentService.getStudentsByCollege(collegeId);
+        List<StudentDTO> studentDTOs = students.stream()
+                .map(DtoMapper::toStudentDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(studentDTOs);
     }
 
     @GetMapping("/department/{departmentId}")
-    public ResponseEntity<List<Student>> getStudentsByDepartment(@PathVariable Long departmentId) {
-        return ResponseEntity.ok(studentService.getStudentsByDepartment(departmentId));
+    public ResponseEntity<List<StudentDTO>> getStudentsByDepartment(@PathVariable Long departmentId) {
+        List<Student> students = studentService.getStudentsByDepartment(departmentId);
+        List<StudentDTO> studentDTOs = students.stream()
+                .map(DtoMapper::toStudentDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(studentDTOs);
     }
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<Student>> getStudentsByCourse(@PathVariable Integer courseId) {
-        return ResponseEntity.ok(studentService.getStudentsByCourse(courseId));
+    public ResponseEntity<List<StudentDTO>> getStudentsByCourse(@PathVariable Integer courseId) {
+        List<Student> students = studentService.getStudentsByCourse(courseId);
+        List<StudentDTO> studentDTOs = students.stream()
+                .map(DtoMapper::toStudentDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(studentDTOs);
     }
     private boolean isImageFile(MultipartFile file) {
         String contentType = file.getContentType();

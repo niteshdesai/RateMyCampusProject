@@ -8,9 +8,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,6 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ratemycampus.entity.College;
+import com.ratemycampus.dto.CollegeDTO;
+import com.ratemycampus.dto.DtoMapper;
 import com.ratemycampus.service.CollegeService;
 
 import jakarta.validation.Valid;
@@ -45,13 +46,17 @@ public class CollegeController {
 	@GetMapping
 	public ResponseEntity<?> getAllColleges() {
 		List<College> colleges = collegeService.getAllColleges();
-		return ResponseEntity.ok(colleges);
+		List<CollegeDTO> collegeDTOs = colleges.stream()
+				.map(DtoMapper::toCollegeDTO)
+				.collect(Collectors.toList());
+		return ResponseEntity.ok(collegeDTOs);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getCollegeById(@PathVariable Long id) {
 		College college = collegeService.getCollegeById(id);
-		return ResponseEntity.ok(college);
+		CollegeDTO collegeDTO = DtoMapper.toCollegeDTO(college);
+		return ResponseEntity.ok(collegeDTO);
 	}
 
 	@PostMapping(value = "/addcollege", consumes = { "multipart/form-data" })

@@ -41,6 +41,10 @@ public class College {
     @Size(max = 255)
     private String website;
 
+    @NotBlank(message = "College type is required")
+    @Size(max = 100, message = "College type must not exceed 100 characters")
+    private String collegeType;
+
 	// Getters and setters
     public Long getCid() {
         return cid;
@@ -114,10 +118,18 @@ public class College {
         this.website = website;
     }
 
+    public String getCollegeType() {
+        return collegeType;
+    }
+
+    public void setCollegeType(String collegeType) {
+        this.collegeType = collegeType;
+    }
+
 
     @Override
     public String toString() {
     return "College [cid=" + cid + ", cname=" + cname + ", cdesc=" + cdesc + ", cactivity=" + cactivity
-        + ", address=" + address + ", cimg=" + cimg + ", email=" + email + ", phone=" + phone + ", website=" + website + "]";
+        + ", address=" + address + ", cimg=" + cimg + ", email=" + email + ", phone=" + phone + ", website=" + website + ", collegeType=" + collegeType + "]";
     }
 }
