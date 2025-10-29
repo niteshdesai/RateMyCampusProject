@@ -14,6 +14,8 @@ public interface CollegeRatingCriteriaRepository extends JpaRepository<CollegeRa
     List<CollegeRatingCriteria> findByCollegeCid(Long collegeId);
     
     List<CollegeRatingCriteria> findByStudentSid(Long studentId);
+
+    CollegeRatingCriteria findByCollegeCidAndStudentSid(Long collegeId, Long studentId);
     
     @Query("SELECT AVG(c.extracurricularActivities) FROM CollegeRatingCriteria c WHERE c.college.cid = :collegeId")
     Double getAverageExtracurricularActivitiesByCollegeId(@Param("collegeId") Long collegeId);

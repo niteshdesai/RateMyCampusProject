@@ -13,9 +13,14 @@ public class TeacherRatingCriteriaService {
     @Autowired
     private TeacherRatingCriteriaRepository teacherRatingCriteriaRepository;
 
+
     public TeacherRatingCriteria addRating(TeacherRatingCriteria rating) {
+
+        
+
         return teacherRatingCriteriaRepository.save(rating);
     }
+
 
     public List<TeacherRatingCriteria> getRatingsByTeacher(Integer teacherId) {
         return teacherRatingCriteriaRepository.findByTeacherTid(teacherId);
@@ -39,5 +44,10 @@ public class TeacherRatingCriteriaService {
 
     public List<TeacherRatingCriteria> getAllRatings() {
         return teacherRatingCriteriaRepository.findAll();
+    }
+
+    public TeacherRatingCriteria getRatingsByTeacherAndStudent(Integer teacherId, Integer studentId) {
+
+        return teacherRatingCriteriaRepository.findByTeacherTidAndStudentSid(teacherId, studentId);
     }
 }

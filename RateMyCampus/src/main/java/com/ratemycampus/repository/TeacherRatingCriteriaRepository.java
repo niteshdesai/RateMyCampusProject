@@ -23,4 +23,6 @@ public interface TeacherRatingCriteriaRepository extends JpaRepository<TeacherRa
     
     @Query("SELECT COUNT(DISTINCT t.student.sid) FROM TeacherRatingCriteria t WHERE t.teacher.tid = :teacherId")
     Long getDistinctStudentCountByTeacherId(@Param("teacherId") Integer teacherId);
+
+    TeacherRatingCriteria findByTeacherTidAndStudentSid(Integer teacherId, Integer studentId);
 }

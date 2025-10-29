@@ -3,8 +3,10 @@ package com.ratemycampus.controller;
 import com.ratemycampus.entity.CollegeRatingCriteria;
 import com.ratemycampus.dto.CollegeRatingCriteriaDTO;
 import com.ratemycampus.dto.DtoMapper;
+import com.ratemycampus.entity.Student;
 import com.ratemycampus.service.CollegeRatingCriteriaService;
 import com.ratemycampus.security.SecurityUtils;
+import com.ratemycampus.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,9 @@ public class CollegeRatingCriteriaController {
 
     @Autowired
     private SecurityUtils securityUtils;
+
+    @Autowired
+    private StudentService studentService;
 
     @PostMapping
     public ResponseEntity<?> addRating(@Valid @RequestBody CollegeRatingCriteriaDTO ratingDTO, BindingResult result) {
@@ -57,6 +62,28 @@ public class CollegeRatingCriteriaController {
                 HashMap<String, String> errors = new HashMap<>();
                 errors.put("error", "You can only submit ratings for yourself");
                 return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+
+            Student student= studentService.getStudentById( (long)ratingDTO.studentId);
+
+            if( student.getCollege().getCid() != ratingDTO.collegeId)
+            {
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("error", "You can only submit ratings for your College");
+                return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+
+            if( collegeRatingCriteriaService.CheckRating(ratingDTO.collegeId,(long)ratingDTO.studentId)!=null)
+            {
+                CollegeRatingCriteria existingrating=collegeRatingCriteriaService.CheckRating(ratingDTO.collegeId,(long)ratingDTO.studentId);
+
+                existingrating.setCampusFacilities(ratingDTO.campusFacilities);
+                existingrating.setExtracurricularActivities(ratingDTO.extracurricularActivities);
+                existingrating.setSportsFacilities(ratingDTO.sportsFacilities);
+
+                return new ResponseEntity<>(collegeRatingCriteriaService.addRating(existingrating), HttpStatus.BAD_REQUEST);
+
+
             }
 
             CollegeRatingCriteria rating = DtoMapper.toCollegeRatingCriteriaEntity(ratingDTO);

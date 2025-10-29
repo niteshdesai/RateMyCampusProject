@@ -17,6 +17,12 @@ public class CollegeRatingCriteriaService {
         return collegeRatingCriteriaRepository.save(rating);
     }
 
+    public  CollegeRatingCriteria CheckRating( Long cid,Long sid)
+
+    {
+        return collegeRatingCriteriaRepository.findByCollegeCidAndStudentSid(cid,sid);
+    }
+
     public List<CollegeRatingCriteria> getRatingsByCollege(Long collegeId) {
         return collegeRatingCriteriaRepository.findByCollegeCid(collegeId);
     }

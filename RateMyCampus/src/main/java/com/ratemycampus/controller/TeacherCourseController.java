@@ -21,29 +21,17 @@ import java.util.*;
 @RequestMapping("/api/teachers/{teacherId}/courses")
 public class TeacherCourseController {
 
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private CourseRepository courseRepository;
-    @Autowired private TeacherCourseRepository teacherCourseRepository;
+    @Autowired private com.ratemycampus.service.TeacherCourseService teacherCourseService;
 
     @GetMapping
     public ResponseEntity<?> list(@PathVariable Integer teacherId) {
-        List<TeacherCourse> list = teacherCourseRepository.findByTeacher_Tid(teacherId);
-        List<TeacherCourseDTO> dtoList = list.stream()
-                .map(DtoMapper::toTeacherCourseDTO)
-                .toList();
-        return ResponseEntity.ok(dtoList);
+        return ResponseEntity.ok(teacherCourseService.list(teacherId));
     }
 
     // Teachers by course id
     @GetMapping("/all")
     public ResponseEntity<?> teachersByCourse(@PathVariable Integer teacherId, @RequestParam("courseId") Integer courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
-        List<TeacherCourse> teacherCourses = teacherCourseRepository.findByCourse(course);
-        List<TeacherCourseDTO> dtoList = teacherCourses.stream()
-                .map(DtoMapper::toTeacherCourseDTO)
-                .toList();
-        return ResponseEntity.ok(dtoList);
+        return ResponseEntity.ok(teacherCourseService.teachersByCourse(courseId));
     }
 
     public static class CourseIdsRequest {
@@ -55,41 +43,14 @@ public class TeacherCourseController {
     @PostMapping
     public ResponseEntity<?> assign(@PathVariable Integer teacherId, @RequestBody CourseIdsRequest body) {
         try {
-
-
             if (body == null || body.courseIds == null || body.courseIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "courseIds is required"));
             }
 
-            Teacher teacher = teacherRepository.findById(teacherId)
-                    .orElseThrow(() -> new EntityNotFoundException("Teacher not found with ID: " + teacherId));
-
-            List<TeacherCourse> created = new ArrayList<>();
-            for (Integer courseId : body.courseIds) {
-                Course course = courseRepository.findById(courseId)
-                        .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
-
-                if (!teacherCourseRepository.existsByTeacher_TidAndCourse(teacherId, course)) {
-                    TeacherCourse tc = new TeacherCourse(teacher, course);
-                    TeacherCourse savedTc = teacherCourseRepository.save(tc);
-                    created.add(savedTc);
-                }
-                else
-                {
-                    HashMap<String, String> errors = new HashMap<>();
-                    errors.put("error",  "Teacher ID:"+teacherId+" Course Id:"+courseId+" Already Available");
-                    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-                }
-            }
-
-            List<TeacherCourseDTO> createdDtos = created.stream()
-                    .map(DtoMapper::toTeacherCourseDTO)
-                    .toList();
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdDtos);
-        }catch (EntityNotFoundException e)
-        {
+            return ResponseEntity.status(HttpStatus.CREATED).body(teacherCourseService.assign(teacherId, body.courseIds));
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
             HashMap<String, String> errors = new HashMap<>();
-            errors.put("error",  e.getMessage());
+            errors.put("error", e.getMessage());
             return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
     }
@@ -100,13 +61,14 @@ public class TeacherCourseController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "courseIds is required"));
         }
 
-        for (Integer courseId : body.courseIds) {
-            Course course = courseRepository.findById(courseId)
-                    .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
-            teacherCourseRepository.deleteByTeacher_TidAndCourse(teacherId, course);
+        try {
+            teacherCourseService.unassign(teacherId, body.courseIds);
+            return ResponseEntity.ok(Map.of("message", "Unassigned successfully"));
+        } catch (EntityNotFoundException e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
-
-        return ResponseEntity.ok(Map.of("message", "Unassigned successfully"));
     }
 }
 

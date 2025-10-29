@@ -1,10 +1,16 @@
 package com.ratemycampus.controller;
 
+import com.ratemycampus.entity.Student;
+import com.ratemycampus.entity.Teacher;
+import com.ratemycampus.entity.TeacherCourse;
 import com.ratemycampus.entity.TeacherRatingCriteria;
 import com.ratemycampus.dto.TeacherRatingCriteriaDTO;
 import com.ratemycampus.dto.DtoMapper;
+import com.ratemycampus.service.StudentService;
+import com.ratemycampus.service.TeacherCourseService;
 import com.ratemycampus.service.TeacherRatingCriteriaService;
 import com.ratemycampus.security.SecurityUtils;
+import com.ratemycampus.service.TeacherService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +34,16 @@ public class TeacherRatingCriteriaController {
     @Autowired
     private SecurityUtils securityUtils;
 
+    @Autowired
+    private TeacherService  teacherService;
+
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private TeacherCourseService teacherCourseService;
+
+
     @PostMapping
     public ResponseEntity<?> addRating(@Valid @RequestBody TeacherRatingCriteriaDTO ratingDTO, BindingResult result) {
         try {
@@ -41,11 +57,7 @@ public class TeacherRatingCriteriaController {
 
             // Security check: Ensure the student ID in the request matches the authenticated student
             Integer currentStudentId = securityUtils.getCurrentStudentId();
-            if (currentStudentId == null) {
-                HashMap<String, String> errors = new HashMap<>();
-                errors.put("error", "Authentication required");
-                return new ResponseEntity<>(errors, HttpStatus.UNAUTHORIZED);
-            }
+            
 
             if (ratingDTO.studentId == null) {
                 HashMap<String, String> errors = new HashMap<>();
@@ -57,6 +69,55 @@ public class TeacherRatingCriteriaController {
                 HashMap<String, String> errors = new HashMap<>();
                 errors.put("error", "You can only submit ratings for yourself");
                 return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+
+            if(ratingDTO.teacherId == null){
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("error", "Teacher ID is required");
+                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+            }
+
+            Student student = studentService.getStudentById( (long) ratingDTO.studentId.intValue() );
+
+            Teacher teacher = teacherService.getTeacherById(ratingDTO.teacherId);
+
+            List<TeacherCourse> teacherCourses = teacherCourseService.listRaw(ratingDTO.teacherId );
+
+            if(student.getDepartment().getDeptId() !=teacher.getDepartment ().getDeptId()){
+                HashMap<String, String> errors = new HashMap<>();
+                errors.put("error", "You can only rate teachers from your own department");
+                return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+            }
+
+
+
+            boolean matchcourse=false;
+
+            for (TeacherCourse teacherCourse : teacherCourses) {
+
+                System.out.println("teacher course id:"+teacherCourse.getCourse().getC_id());
+                if(teacherCourse.getCourse().getC_id() == student.getCourse().getC_id() ){
+                    System.out.println("teacher course id match:"+teacherCourse.getCourse().getC_id());
+                    matchcourse = true;
+                }
+            }
+           if(!matchcourse){
+               HashMap<String, String> errors = new HashMap<>();
+               errors.put("error", "You can only rate teachers from your own Course");
+               return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+           }
+
+
+
+            if(teacherRatingCriteriaService.getRatingsByTeacherAndStudent(ratingDTO.teacherId, ratingDTO.studentId)!=null){
+               
+                TeacherRatingCriteria existingRating = teacherRatingCriteriaService.getRatingsByTeacherAndStudent(ratingDTO.teacherId, ratingDTO.studentId);
+
+                existingRating.setSubjectKnowledge(ratingDTO.subjectKnowledge);
+                existingRating.setCommunicationSkills(ratingDTO.communicationSkills);
+
+                TeacherRatingCriteria teacherRatingCriteria= teacherRatingCriteriaService.addRating(existingRating);
+                return new ResponseEntity<>(teacherRatingCriteria,HttpStatus.OK);
             }
 
             TeacherRatingCriteria rating = DtoMapper.toTeacherRatingCriteriaEntity(ratingDTO);
