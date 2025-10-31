@@ -132,12 +132,22 @@ public class TeacherRatingCriteriaController {
     }
 
     @GetMapping("/teacher/{teacherId}")
-    public ResponseEntity<List<TeacherRatingCriteriaDTO>> getRatingsByTeacher(@PathVariable Integer teacherId) {
+    public HashMap<?,?> getRatingsByTeacher(@PathVariable Integer teacherId) {
         List<TeacherRatingCriteria> ratings = teacherRatingCriteriaService.getRatingsByTeacher(teacherId);
-        List<TeacherRatingCriteriaDTO> ratingDTOs = ratings.stream()
-                .map(DtoMapper::toTeacherRatingCriteriaDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(ratingDTOs);
+
+        double subject_knowledge=0;
+        double communication_skills=0;
+        for (TeacherRatingCriteria tcr : ratings) {
+            subject_knowledge+=tcr.getSubjectKnowledge();
+            communication_skills+=tcr.getCommunicationSkills();
+        }
+
+        HashMap<String, Double> allRating = new HashMap<>();
+
+        allRating.put("subject_knowledge",subject_knowledge/ratings.size());
+        allRating.put("communication_skills",communication_skills/ratings.size());
+
+        return allRating;
     }
 
     @GetMapping("/student/{studentId}")

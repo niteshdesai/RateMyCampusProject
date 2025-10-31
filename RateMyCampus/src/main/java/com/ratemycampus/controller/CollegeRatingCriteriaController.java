@@ -98,12 +98,10 @@ public class CollegeRatingCriteriaController {
     }
 
     @GetMapping("/college/{collegeId}")
-    public ResponseEntity<List<CollegeRatingCriteriaDTO>> getRatingsByCollege(@PathVariable Long collegeId) {
-        List<CollegeRatingCriteria> ratings = collegeRatingCriteriaService.getRatingsByCollege(collegeId);
-        List<CollegeRatingCriteriaDTO> ratingDTOs = ratings.stream()
-                .map(DtoMapper::toCollegeRatingCriteriaDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(ratingDTOs);
+    public ResponseEntity<?> getRatingsByCollege(@PathVariable Long collegeId) {
+        HashMap<String,Double> ratings = collegeRatingCriteriaService.getRatingsByCollege(collegeId);
+
+        return ResponseEntity.ok(ratings);
     }
 
     @GetMapping("/student/{studentId}")

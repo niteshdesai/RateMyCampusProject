@@ -48,7 +48,9 @@ public class SecurityConfig {
                         // Public (read-only) endpoints
                         .requestMatchers("/auth/**").permitAll()
 
-                        .requestMatchers("/upload/**").permitAll()
+                        // Allow static uploads folder to be publicly accessible
+                        .requestMatchers("/uploads/**").permitAll()
+
                         .requestMatchers("/api/colleges/search").permitAll()
                         .requestMatchers("/api/colleges/city/**").permitAll()
                         .requestMatchers("/api/colleges/{id}/departments").permitAll()
@@ -89,9 +91,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/departments/*/courses/count").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/courses/department/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hod/department/{departmentId}").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/colleges//search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teachers/{teacherId}/courses")
                         .permitAll()
+
+                        .requestMatchers(HttpMethod.GET, " /api/college-rating-criteria/college/{collegeId}").permitAll()
                         // Protected endpoints
                         .requestMatchers(HttpMethod.POST, "/api/courses").hasAuthority("ROLE_HOD")
                         .requestMatchers(HttpMethod.PUT, "/api/courses/{id}").hasAuthority("ROLE_HOD")

@@ -163,6 +163,8 @@ public final class DtoMapper {
         c.setAddress(dto.address);
         c.setCimg(dto.cimg);
         c.setEmail(dto.email);
+        c.setPhone(dto.phone);
+        c.setWebsite(dto.website);
         c.setCollegeType(dto.collegeType);
         return c;
     }
@@ -177,6 +179,8 @@ public final class DtoMapper {
         dto.address = c.getAddress();
         dto.cimg = c.getCimg();
         dto.email = c.getEmail();
+        dto.phone = c.getPhone();
+        dto.website = c.getWebsite();
         dto.collegeType = c.getCollegeType();
         return dto;
     }
