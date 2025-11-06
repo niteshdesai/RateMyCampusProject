@@ -43,16 +43,31 @@ public class LoginService {
 
     public String loginHod(String email, String password) {
         DepartmentAdmin hod = deptAdminRepo.findByEmailAndPassword(email, password);
-        if (hod != null && hod.getCollege().getCid() != null && hod.getDepartment().getDeptId() != null) {
-            return jwtUtil.generateToken(hod.getEmail(), "HOD", hod.getCollege().getCid(), hod.getDepartment().getDeptId());
+        if (hod != null && hod.getCollege() != null && hod.getDepartment() != null) {
+            return jwtUtil.generateTokenForHod(
+                hod.getHodId(),
+                hod.getUsername(),
+                hod.getName(),
+                hod.getEmail(),
+                hod.getDaImg(),
+                hod.getCollege().getCid(),
+                hod.getDepartment().getDeptId()
+            );
         }
         return null;
     }
 
     public String loginCollegeAdmin(String email, String password) {
         CollegeAdmin collegeAdmin = collegeAdminRepo.findByEmailAndPassword(email, password);
-        if (collegeAdmin != null && collegeAdmin.getCollege().getCid()!= null) {
-            return jwtUtil.generateToken(collegeAdmin.getEmail(), "COLLEGE_ADMIN", collegeAdmin.getCollege().getCid());
+        if (collegeAdmin != null && collegeAdmin.getCollege() != null) {
+            return jwtUtil.generateTokenForCollegeAdmin(
+                collegeAdmin.getId(),
+                collegeAdmin.getName(),
+                collegeAdmin.getEmail(),
+                collegeAdmin.getMobile(),
+                collegeAdmin.getImagePath(),
+                collegeAdmin.getCollege().getCid()
+            );
         }
         return null;
     }

@@ -31,9 +31,16 @@ public class TeacherCourseService {
         return teacherCourseRepository.findByTeacher_Tid(teacherId);
     }
 
-    public List<TeacherCourseDTO> list(Integer teacherId) {
+    public List<?> list(Integer teacherId) {
         List<TeacherCourse> list = teacherCourseRepository.findByTeacher_Tid(teacherId);
-        return list.stream().map(DtoMapper::toTeacherCourseDTO).toList();
+
+        List<String> courseNames = new ArrayList<>();
+
+        for (TeacherCourse tc : list) {
+            courseNames.add(tc.getCourse().getcName());
+        }
+
+        return courseNames;
     }
 
     public List<TeacherCourseDTO> teachersByCourse(Integer courseId) {
