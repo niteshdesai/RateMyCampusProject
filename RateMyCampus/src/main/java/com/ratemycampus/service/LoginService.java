@@ -31,12 +31,23 @@ public class LoginService {
 
     public String loginStudent(String enrollment, Long collegeId, Integer semester) {
         Student student = studentRepo.findByEnrollmentAndCollegeCidAndSsem(enrollment, collegeId, semester);
-
+        System.out.println(student);
         if (student != null) {
-            // Always store the provided collegeId in the JWT
-            String JWTtoken= jwtUtil.generateToken(student.getEnrollment(), "STUDENT", collegeId);
-
-            return JWTtoken;
+            return jwtUtil.generateTokenForStudent(
+                student.getSid(),
+                student.getEnrollment(),
+                student.getSname(),
+                student.getSsem(),
+                student.getSsection(),
+                student.getSgender(),
+                student.getSmobile(),
+                student.getScity(),
+                student.getSimg(),
+                student.getSemail(),
+                student.getCollege() != null ? student.getCollege().getCid() : collegeId,
+                student.getDepartment() != null ? student.getDepartment().getDeptId() : null,
+                student.getCourse() != null ? student.getCourse().getC_id() : null
+            );
         }
         return null;
     }

@@ -191,4 +191,65 @@ public class SecurityUtils {
         }
         return null;
     }
+
+    /**
+     * Get current Student from JWT token details
+     * @return Student object with JWT details, null if not Student
+     */
+    public Student getCurrentStudent() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getDetails() instanceof java.util.Map) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> details = (java.util.Map<String, Object>) authentication.getDetails();
+                
+                if ("STUDENT".equals(details.get("role"))) {
+                    Student student = new Student();
+                    
+                    Object sid = details.get("sid");
+                    if (sid instanceof Integer) student.setSid((Integer) sid);
+                    else if (sid instanceof Long) student.setSid(((Long) sid).intValue());
+                    
+                    student.setEnrollment((String) details.get("enrollment"));
+                    student.setSname((String) details.get("sname"));
+                    
+                    Object ssem = details.get("ssem");
+                    if (ssem instanceof Integer) student.setSsem((Integer) ssem);
+                    else if (ssem instanceof Long) student.setSsem(((Long) ssem).intValue());
+                    
+                    student.setSsection((String) details.get("ssection"));
+                    student.setSgender((String) details.get("sgender"));
+                    student.setSmobile((String) details.get("smobile"));
+                    student.setScity((String) details.get("scity"));
+                    student.setSimg((String) details.get("simg"));
+                    student.setSemail((String) details.get("semail"));
+                    
+                    return student;
+                }
+            }
+        } catch (Exception e) {
+            // Log error if needed
+        }
+        return null;
+    }
+
+    /**
+     * Get current student's course ID from JWT token
+     * @return Course ID from JWT token, null if not found
+     */
+    public Integer getCurrentStudentCourseId() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getDetails() instanceof java.util.Map) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> details = (java.util.Map<String, Object>) authentication.getDetails();
+                Object courseId = details.get("courseId");
+                if (courseId instanceof Integer) return (Integer) courseId;
+                if (courseId instanceof Long) return ((Long) courseId).intValue();
+            }
+        } catch (Exception e) {
+            // Log error if needed
+        }
+        return null;
+    }
 }

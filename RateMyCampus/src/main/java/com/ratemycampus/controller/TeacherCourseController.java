@@ -40,6 +40,7 @@ public class TeacherCourseController {
         public void setCourseIds(List<Integer> courseIds) { this.courseIds = courseIds; }
     }
 
+
     @PostMapping
     public ResponseEntity<?> assign(@PathVariable Integer teacherId, @RequestBody CourseIdsRequest body) {
         try {
@@ -56,13 +57,14 @@ public class TeacherCourseController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> unassign(@PathVariable Integer teacherId, @RequestBody CourseIdsRequest body) {
-        if (body == null || body.courseIds == null || body.courseIds.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "courseIds is required"));
+    public ResponseEntity<?> unassign(@PathVariable Integer teacherId, @RequestBody Course course) {
+        if (course == null || course.getC_id() == null) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "courseId is required"));
         }
 
         try {
-            teacherCourseService.unassign(teacherId, body.courseIds);
+            teacherCourseService.unassign(teacherId, course.getC_id());
             return ResponseEntity.ok(Map.of("message", "Unassigned successfully"));
         } catch (EntityNotFoundException e) {
             HashMap<String, String> errors = new HashMap<>();

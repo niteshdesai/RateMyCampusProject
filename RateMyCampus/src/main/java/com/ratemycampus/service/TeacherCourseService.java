@@ -31,16 +31,11 @@ public class TeacherCourseService {
         return teacherCourseRepository.findByTeacher_Tid(teacherId);
     }
 
-    public List<?> list(Integer teacherId) {
+    public List<TeacherCourseDTO> list(Integer teacherId) {
         List<TeacherCourse> list = teacherCourseRepository.findByTeacher_Tid(teacherId);
+        return list.stream().map(DtoMapper::toTeacherCourseDTO).toList();
+      
 
-        List<String> courseNames = new ArrayList<>();
-
-        for (TeacherCourse tc : list) {
-            courseNames.add(tc.getCourse().getcName());
-        }
-
-        return courseNames;
     }
 
     public List<TeacherCourseDTO> teachersByCourse(Integer courseId) {
@@ -71,11 +66,18 @@ public class TeacherCourseService {
         return created.stream().map(DtoMapper::toTeacherCourseDTO).toList();
     }
 
-    public void unassign(Integer teacherId, List<Integer> courseIds) {
-        for (Integer courseId : courseIds) {
-            Course course = courseRepository.findById(courseId)
-                    .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
-            teacherCourseRepository.deleteByTeacher_TidAndCourse(teacherId, course);
+    public void unassign(Integer teacherId, Integer courseId) {
+        // Verify the course exists
+        courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found with ID: " + courseId));
+
+        // Verify the assignment exists
+        TeacherCourse teacherCourse = teacherCourseRepository.findByTeacher_TidAndCourse(teacherId, 
+            courseRepository.getReferenceById(courseId));
+        if (teacherCourse == null) {
+            throw new EntityNotFoundException("Teacher-Course assignment not found for Teacher ID: " + teacherId + " and Course ID: " + courseId);
         }
+
+        teacherCourseRepository.deleteTeacherCourseAssignment(teacherId, courseId);
     }
 }

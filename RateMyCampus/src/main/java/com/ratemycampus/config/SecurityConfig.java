@@ -50,7 +50,7 @@ public class SecurityConfig {
 
                         // Allow static uploads folder to be publicly accessible
                         .requestMatchers("/uploads/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/college-admin/{id}").permitAll()
                         .requestMatchers("/api/colleges/search").permitAll()
                         .requestMatchers("/api/colleges/city/**").permitAll()
                         .requestMatchers("/api/colleges/{id}/departments").permitAll()

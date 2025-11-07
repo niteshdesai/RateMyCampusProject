@@ -61,6 +61,21 @@ public class JwtFilter extends OncePerRequestFilter {
                     details.put("imagePath", jwtUtil.extractImagePath(token));
                 }
                 
+                // Add Student-specific details if role is STUDENT
+                if ("STUDENT".equals(role)) {
+                    details.put("sid", jwtUtil.extractSid(token));
+                    details.put("enrollment", jwtUtil.extractEnrollment(token));
+                    details.put("sname", jwtUtil.extractSname(token));
+                    details.put("ssem", jwtUtil.extractSsem(token));
+                    details.put("ssection", jwtUtil.extractSsection(token));
+                    details.put("sgender", jwtUtil.extractSgender(token));
+                    details.put("smobile", jwtUtil.extractSmobile(token));
+                    details.put("scity", jwtUtil.extractScity(token));
+                    details.put("simg", jwtUtil.extractSimg(token));
+                    details.put("semail", jwtUtil.extractSemail(token));
+                    details.put("courseId", jwtUtil.extractCourseId(token));
+                }
+                
                 authentication.setDetails(details);
                 
                 SecurityContextHolder.getContext().setAuthentication(authentication);

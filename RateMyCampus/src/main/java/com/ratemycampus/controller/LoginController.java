@@ -18,7 +18,13 @@ public class LoginController {
                                @RequestParam Long collegeId) {
 
         String token = loginService.loginStudent(enrollment, collegeId, semester);
-        return (token != null) ? token : "INVALID_STUDENT_DETAILS";
+        System.out.println(token);
+
+        if(token==null){
+            return "Invalide student details";
+        }
+
+        return  token;
     }
 
     @PostMapping("/hod")
