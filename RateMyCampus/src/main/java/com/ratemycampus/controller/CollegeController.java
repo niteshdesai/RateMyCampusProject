@@ -150,34 +150,57 @@ public class CollegeController {
 		return ResponseEntity.ok(count);
 	}
 
-	@PutMapping(value = "/updateCollegeImage/{Id}", consumes = { "multipart/form-data" })
-	public ResponseEntity<?> updateCollegeImage(@PathVariable Long Id,
-			@RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-		College college = collegeService.getCollegeById(Id);
-		String prevImage = college.getCimg();
-		try {
-			if (image != null && !image.isEmpty()) {
-				if (!isImageFile(image)) {
-					HashMap<String, String> errors = new HashMap<>();
-					errors.put("image", "File must be an image (jpg, jpeg, png)");
-					return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-				}
-				// Delete previous image if exists
-				if (prevImage != null && !prevImage.isEmpty()) {
-					File oldFile = new File(prevImage);
-					if (oldFile.exists()) {
-						oldFile.delete();
-					}
-				}
-				String imagePath = saveImage(image); // This will save in uploads/college-images/
-				college.setCimg(imagePath);
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		College updated = collegeService.updateCollege(Id, college);
-		return ResponseEntity.ok(updated);
-	}
+    @PutMapping(value = "/updateCollegeImage/{id}", consumes = { "multipart/form-data" })
+    public ResponseEntity<?> updateCollegeImage(
+            @PathVariable Long id,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        try {
+            College college = collegeService.getCollegeById(id);
+            if (college == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "College not found"));
+            }
+
+            String prevImage = college.getCimg();
+
+            // Only process if a new image is provided
+            if (image != null && !image.isEmpty()) {
+                // Validate image type
+                if (!isImageFile(image)) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("image", "File must be an image (jpg, jpeg, png)"));
+                }
+
+                // Delete old image
+                if (prevImage != null && !prevImage.isEmpty()) {
+                    Path oldPath = Paths.get(prevImage);
+                    if (Files.exists(oldPath)) {
+                        Files.deleteIfExists(oldPath);
+                        System.out.println("Deleted old image: " + prevImage);
+                    }
+                }
+
+                // Save new image
+                String newImagePath = saveImage(image);
+                college.setCimg(newImagePath);
+                System.out.println("New image saved: " + newImagePath);
+            }
+            // If no image sent, keep existing one
+
+            College updated = collegeService.updateCollege(id, college);
+            return ResponseEntity.ok(updated);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to save image: " + e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Update failed: " + e.getMessage()));
+        }
+    }
 
 	private boolean isImageFile(MultipartFile file) {
 		String contentType = file.getContentType();
@@ -192,13 +215,15 @@ public class CollegeController {
 			Files.createDirectories(uploadPath);
 		}
 		String originalFileName = image.getOriginalFilename();
+        System.out.println("Original File Name :"+originalFileName);
 		String fileExtension = "";
 		if (originalFileName != null && originalFileName.contains(".")) {
 			fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
 		}
 		String fileName = java.util.UUID.randomUUID() + fileExtension;
 		Path filePath = uploadPath.resolve(fileName);
-		Files.copy(image.getInputStream(), filePath);
+		Files.copy(image.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+		System.out.println("Image saved to: " + filePath.toAbsolutePath());
 		// Return relative path for storage in DB
 		return uploadDir + fileName;
 	}

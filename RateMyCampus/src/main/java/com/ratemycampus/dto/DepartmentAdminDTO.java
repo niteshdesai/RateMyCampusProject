@@ -6,6 +6,7 @@ public class DepartmentAdminDTO {
 	public String name;
 	public String email;
 	public String daImg;
+    public String password;
 	public Long departmentId;
 	public Long collegeId;
 }

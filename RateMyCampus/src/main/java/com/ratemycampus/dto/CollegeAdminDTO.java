@@ -7,6 +7,7 @@ public class CollegeAdminDTO {
 	public String mobile;
 	public String imagePath;
 	public Long collegeId;
+
 }
 
 

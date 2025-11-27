@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ratemycampus.entity.DepartmentAdmin;
+import com.ratemycampus.dto.DepartmentAdminDTO;
+import com.ratemycampus.dto.DtoMapper;
 import com.ratemycampus.service.DepartmentAdminService;
 import com.ratemycampus.security.SecurityUtils;
 
@@ -79,17 +82,34 @@ public class DepartmentAdminController {
 		}
 	}
     // ✅ Get All
-    @GetMapping
-    public List<DepartmentAdmin> getAllDeptAdmins() {
-        return service.getAllHods();
+	@GetMapping
+	public List<DepartmentAdminDTO> getAllDeptAdmins() {
+		List<DepartmentAdmin> hods = service.getAllHods();
+		return hods.stream().map(DtoMapper::toDepartmentAdminDTO).collect(Collectors.toList());
+	}
 
+    // ✅ Get All Department Admins by College ID
+    @GetMapping("/college/{collegeId}")
+    public ResponseEntity<?> getDeptAdminsByCollegeId(@PathVariable Long collegeId) {
+        try {
+			List<DepartmentAdmin> hods = service.getHodsByCollegeId(collegeId);
+			List<DepartmentAdminDTO> dtos = hods.stream().map(DtoMapper::toDepartmentAdminDTO).collect(Collectors.toList());
+			return ResponseEntity.ok(dtos);
+        } catch (RuntimeException e) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
     }
 
     // ✅ Get by ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getDeptAdminById(@PathVariable Integer id) {
       try {
-          return ResponseEntity.ok(service.getHodById(id));
+		  DepartmentAdmin admin = service.getHodById(id);
+          System.out.println("Fetched Department Admin: " + admin);
+		  DepartmentAdminDTO dto = DtoMapper.toDepartmentAdminDTO(admin);
+		  return ResponseEntity.ok(dto);
       }catch (RuntimeException e)
       {
           HashMap<String, String> errors = new HashMap<>();
@@ -205,16 +225,31 @@ public class DepartmentAdminController {
     // ✅ Get by Department ID
     @GetMapping("/department/{departmentId}")
     public ResponseEntity<?> getDeptAdminByDepartmentId(@PathVariable Long departmentId) {
-        DepartmentAdmin admin = service.getHodByDepartmentId(departmentId);
+		DepartmentAdmin admin = service.getHodByDepartmentId(departmentId);
 
-
-        if (admin != null) {
-            return ResponseEntity.ok(admin);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Department Admin not found for department ID: " + departmentId);
-        }
+		if (admin != null) {
+			DepartmentAdminDTO dto = mapToDto(admin);
+			return ResponseEntity.ok(dto);
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body("Department Admin not found for department ID: " + departmentId);
+		}
     }
+
+	// Helper to map entity -> DTO including departmentId and collegeId
+	private DepartmentAdminDTO mapToDto(DepartmentAdmin admin) {
+		DepartmentAdminDTO dto = new DepartmentAdminDTO();
+		dto.hodId = admin.getHodId();
+		dto.username = admin.getUsername();
+		dto.name = admin.getName();
+		dto.email = admin.getEmail();
+		dto.daImg = admin.getDaImg();
+		// include password
+		dto.password = admin.getPassword();
+		if (admin.getDepartment() != null) dto.departmentId = admin.getDepartment().getDeptId();
+		if (admin.getCollege() != null) dto.collegeId = admin.getCollege().getCid();
+		return dto;
+	}
     
     private boolean isImageFile(MultipartFile file) {
 		String contentType = file.getContentType();
@@ -241,4 +276,3 @@ public class DepartmentAdminController {
     }
     
 }
-

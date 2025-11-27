@@ -268,6 +268,7 @@ public final class DtoMapper {
         dto.email = a.getEmail();
         dto.mobile = a.getMobile();
         dto.imagePath = a.getImagePath();
+
         dto.collegeId = a.getCollege() != null ? a.getCollege().getCid() : null;
         return dto;
     }
@@ -281,6 +282,8 @@ public final class DtoMapper {
         a.setName(dto.name);
         a.setEmail(dto.email);
         a.setDaImg(dto.daImg);
+        a.setPassword(dto.password);
+        a.setDepartment(a.getDepartment());
         if (dto.departmentId != null) {
             Department d = new Department();
             d.setDeptId(dto.departmentId);
@@ -302,6 +305,8 @@ public final class DtoMapper {
         dto.name = a.getName();
         dto.email = a.getEmail();
         dto.daImg = a.getDaImg();
+        // include password in DTO so API responses contain it when needed
+        dto.password = a.getPassword();
         dto.departmentId = a.getDepartment() != null ? a.getDepartment().getDeptId() : null;
         dto.collegeId = a.getCollege() != null ? a.getCollege().getCid() : null;
         return dto;
@@ -416,5 +421,3 @@ public final class DtoMapper {
         return dto;
     }
 }
-
-

@@ -60,13 +60,13 @@ public class CollegeService {
         College existing = getCollegeById(id);
 
         // Delete old image if it exists and a new image is provided
-        if (updatedCollege.getCimg() != null && existing.getCimg() != null) {
-            try {
-                Files.deleteIfExists(Paths.get(existing.getCimg()));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to delete old image: " + e.getMessage());
-            }
-        }
+//        if (updatedCollege.getCimg() != null && existing.getCimg() != null) {
+//            try {
+//                Files.deleteIfExists(Paths.get(existing.getCimg()));
+//            } catch (IOException e) {
+//                throw new RuntimeException("Failed to delete old image: " + e.getMessage());
+//            }
+//        }
 
     existing.setCname(updatedCollege.getCname());
     existing.setCdesc(updatedCollege.getCdesc());
@@ -76,6 +76,7 @@ public class CollegeService {
     existing.setCimg(updatedCollege.getCimg());
     existing.setPhone(updatedCollege.getPhone());
     existing.setWebsite(updatedCollege.getWebsite());
+    existing.setCollegeType(updatedCollege.getCollegeType());
         return collegeRepository.save(existing);
     }
 

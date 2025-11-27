@@ -42,7 +42,8 @@ public class DepartmentController {
 	        
 	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 	 }
-	 
+
+
 	 // Validate college ownership
 	 Long currentUserCollegeId = securityUtils.getCurrentUserCollegeId();
 	 if (currentUserCollegeId == null || !currentUserCollegeId.equals(department.getCollege().getCid())) {

@@ -28,7 +28,7 @@ public class SecurityConfig {
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(false);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/teachers/{teacherId}/courses/all").permitAll()
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/colleges/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/students/college/{collegeId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teachers/college/{collegeId}").permitAll()
@@ -94,8 +95,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/colleges//search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teachers/{teacherId}/courses")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/hod/college/{collegeId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, " /api/college-rating-criteria/college/{collegeId}")
+                        .permitAll()
 
-                        .requestMatchers(HttpMethod.GET, " /api/college-rating-criteria/college/{collegeId}").permitAll()
                         // Protected endpoints
                         .requestMatchers(HttpMethod.POST, "/api/courses").hasAuthority("ROLE_HOD")
                         .requestMatchers(HttpMethod.PUT, "/api/courses/{id}").hasAuthority("ROLE_HOD")
@@ -105,7 +108,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/colleges/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/colleges/updateCollegeImage/{id}")
                         .hasAuthority("ROLE_COLLEGE_ADMIN")
-                        // .requestMatchers(HttpMethod.GET, "/api/hod/**").hasAuthority("ROLE_ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/api/hod").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/hod/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/hod/updateDeptAdminImage/{id}")
@@ -114,8 +117,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/departments").hasAuthority("ROLE_COLLEGE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/departments/{id}").hasAuthority("ROLE_HOD")
                         .requestMatchers(HttpMethod.DELETE, "/api/departments/{id}").hasAuthority("ROLE_COLLEGE_ADMIN")
-                        // .requestMatchers("/api/ratings/addCollegeRating").hasAuthority("ROLE_STUDENT") // Temporarily disabled for testing
-//                        .requestMatchers(HttpMethod.PUT, "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
+                        // .requestMatchers("/api/ratings/addCollegeRating").hasAuthority("ROLE_STUDENT")
+                        // // Temporarily disabled for testing
+                        // .requestMatchers(HttpMethod.PUT,
+                        // "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/ratings/{id}").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/college-rating-criteria").hasAuthority("ROLE_STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/teacher-rating-criteria").hasAuthority("ROLE_STUDENT")

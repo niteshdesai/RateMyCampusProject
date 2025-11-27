@@ -31,7 +31,7 @@ import com.ratemycampus.repository.DepartmentAdminRepository;
 	    }
 	    
 	    public DepartmentAdmin getHodById(Integer id) {
-
+            System.out.println(repository.findByHodId(id));
 	        return repository.findByHodId(id)
 	                .orElseThrow(() -> new RuntimeException("HOD not found with ID: " + id));
 	    }
@@ -73,6 +73,10 @@ import com.ratemycampus.repository.DepartmentAdminRepository;
 	    }
 	    public DepartmentAdmin getHodByDepartmentId(Long departmentId) {
 	        return repository.findByDepartmentDeptId(departmentId).orElse(null);
+	    }
+
+	    public List<DepartmentAdmin> getHodsByCollegeId(Long collegeId) {
+	        return repository.findByCollege_Cid(collegeId);
 	    }
 
 		

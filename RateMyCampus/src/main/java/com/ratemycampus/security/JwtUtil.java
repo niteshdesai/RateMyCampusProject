@@ -15,7 +15,6 @@ public class JwtUtil {
     private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
 
-
     public String generateToken(String username, String role, Long collegeId) {
         var builder = Jwts.builder()
                 .setSubject(username)
@@ -44,8 +43,8 @@ public class JwtUtil {
     }
 
     // Generate token for HOD with all details
-    public String generateTokenForHod(Integer hodId, String username, String name, String email, 
-                                      String daImg, Long collegeId, Long departmentId) {
+    public String generateTokenForHod(Integer hodId, String username, String name, String email,
+            String daImg, Long collegeId, Long departmentId) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", "HOD")
@@ -63,8 +62,8 @@ public class JwtUtil {
     }
 
     // Generate token for College Admin with all details
-    public String generateTokenForCollegeAdmin(Integer adminId, String name, String email, 
-                                               String mobile, String imagePath, Long collegeId) {
+    public String generateTokenForCollegeAdmin(Integer adminId, String name, String email,
+            String mobile, String imagePath, Long collegeId) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", "COLLEGE_ADMIN")
@@ -80,11 +79,26 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Generate token for Platform Admin (system-wide) minimal claims (no college,
+    // no image)
+    public String generateTokenForPlatformAdmin(Integer adminId, String name, String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", "ADMIN")
+                .claim("adminId", adminId)
+                .claim("name", name)
+                .claim("email", email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SECRET_KEY)
+                .compact();
+    }
+
     // Generate token for Student with all details
-    public String generateTokenForStudent(Integer sid, String enrollment, String sname, 
-                                          Integer ssem, String ssection, String sgender, 
-                                          String smobile, String scity, String simg, 
-                                          String semail, Long collegeId, Long departmentId, Integer courseId) {
+    public String generateTokenForStudent(Integer sid, String enrollment, String sname,
+            Integer ssem, String ssection, String sgender,
+            String smobile, String scity, String simg,
+            String semail, Long collegeId, Long departmentId, Integer courseId) {
         var builder = Jwts.builder()
                 .setSubject(enrollment)
                 .claim("role", "STUDENT")
@@ -102,11 +116,11 @@ public class JwtUtil {
                 .claim("courseId", courseId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME));
-        
+
         if (simg != null) {
             builder.claim("simg", simg);
         }
-        
+
         return builder.signWith(SECRET_KEY).compact();
     }
 
@@ -120,29 +134,41 @@ public class JwtUtil {
 
     public Long extractCollegeId(String token) {
         Object val = extractAllClaims(token).get("collegeId");
-        if (val == null) return null;
-        if (val instanceof Integer) return ((Integer) val).longValue();
-        if (val instanceof Long) return (Long) val;
-        if (val instanceof String) return Long.parseLong((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return ((Integer) val).longValue();
+        if (val instanceof Long)
+            return (Long) val;
+        if (val instanceof String)
+            return Long.parseLong((String) val);
         return null;
     }
 
     public Long extractDepartmentId(String token) {
         Object val = extractAllClaims(token).get("departmentId");
-        if (val == null) return null;
-        if (val instanceof Integer) return ((Integer) val).longValue();
-        if (val instanceof Long) return (Long) val;
-        if (val instanceof String) return Long.parseLong((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return ((Integer) val).longValue();
+        if (val instanceof Long)
+            return (Long) val;
+        if (val instanceof String)
+            return Long.parseLong((String) val);
         return null;
     }
 
     // Extract HOD details
     public Integer extractHodId(String token) {
         Object val = extractAllClaims(token).get("hodId");
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Long) return ((Long) val).intValue();
-        if (val instanceof String) return Integer.parseInt((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Long)
+            return ((Long) val).intValue();
+        if (val instanceof String)
+            return Integer.parseInt((String) val);
         return null;
     }
 
@@ -165,12 +191,18 @@ public class JwtUtil {
     // Extract College Admin details
     public Integer extractAdminId(String token) {
         Object val = extractAllClaims(token).get("adminId");
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Long) return ((Long) val).intValue();
-        if (val instanceof String) return Integer.parseInt((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Long)
+            return ((Long) val).intValue();
+        if (val instanceof String)
+            return Integer.parseInt((String) val);
         return null;
     }
+
+    // Removed unused method extractPlatformAdminId
 
     public String extractMobile(String token) {
         return extractAllClaims(token).get("mobile", String.class);
@@ -183,10 +215,14 @@ public class JwtUtil {
     // Extract Student details
     public Integer extractSid(String token) {
         Object val = extractAllClaims(token).get("sid");
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Long) return ((Long) val).intValue();
-        if (val instanceof String) return Integer.parseInt((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Long)
+            return ((Long) val).intValue();
+        if (val instanceof String)
+            return Integer.parseInt((String) val);
         return null;
     }
 
@@ -200,10 +236,14 @@ public class JwtUtil {
 
     public Integer extractSsem(String token) {
         Object val = extractAllClaims(token).get("ssem");
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Long) return ((Long) val).intValue();
-        if (val instanceof String) return Integer.parseInt((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Long)
+            return ((Long) val).intValue();
+        if (val instanceof String)
+            return Integer.parseInt((String) val);
         return null;
     }
 
@@ -233,10 +273,14 @@ public class JwtUtil {
 
     public Integer extractCourseId(String token) {
         Object val = extractAllClaims(token).get("courseId");
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Long) return ((Long) val).intValue();
-        if (val instanceof String) return Integer.parseInt((String) val);
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Long)
+            return ((Long) val).intValue();
+        if (val instanceof String)
+            return Integer.parseInt((String) val);
         return null;
     }
 
